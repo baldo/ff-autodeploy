@@ -1,14 +1,56 @@
-apply plugin: 'java'
+// plugins
+apply plugin: 'application'
 apply plugin: 'eclipse'
+apply plugin: 'java'
 
+// general settings
 sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 version = '0.0'
 
-repositories {
-    mavenCentral()
-}
-
+// gradle wrapper
 task wrapper(type: Wrapper) {
     gradleVersion = '1.6'
 }
 
+// eclipse
+eclipse {
+    classpath {
+        defaultOutputDir = file "${project.projectDir}/build-eclipse"
+    }
+}
+
+// dependencies
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile \
+        'org.seleniumhq.selenium:selenium-support:2.33.0',
+        'org.seleniumhq.selenium:selenium-firefox-driver:2.33.0',
+        'com.google.guava:guava:14.0.1',
+        'com.google.inject:guice:3.0',
+        'commons-cli:commons-cli:1.2'
+}
+
+// creating the standalone jar
+mainClassName = 'net.freifunk.hamburg.autodeploy.Main'
+
+tasks.jar {
+    description = 'Creates JAR containing all dependencies.'
+
+    from files(sourceSets.main.output.classesDir)
+    from configurations.runtime.asFileTree.files.collect { zipTree(it) }
+
+    manifest.mainAttributes(
+        'Main-Class': mainClassName,
+        'Implementation-Title': 'Freifunk Auto Deployer',
+        'Implementation-Version': version,
+        'Built-By': 'Andreas Baldeau <andreas@baldeau.net>',
+        'Built-Date': new Date(),
+        'Built-JDK': System.getProperty('java.version'),
+        'Built-Gradle': gradle.gradleVersion
+    )
+}
