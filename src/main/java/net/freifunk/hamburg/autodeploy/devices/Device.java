@@ -1,13 +1,14 @@
 package net.freifunk.hamburg.autodeploy.devices;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ComparisonChain;
 
 /**
  * A device having a model and hardware version.
  *
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
-public class Device {
+public class Device implements Comparable<Device> {
 
     private final String _model;
     private final String _version;
@@ -23,6 +24,14 @@ public class Device {
 
     public String getVersion() {
         return _version;
+    }
+
+    @Override
+    public int compareTo(final Device other) {
+        return ComparisonChain.start()
+            .compare(this._model, other._model)
+            .compare(this._version, other._version)
+        .result();
     }
 
     @Override

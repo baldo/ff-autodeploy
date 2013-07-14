@@ -1,7 +1,12 @@
 package net.freifunk.hamburg.autodeploy;
 
-import java.io.File;
+import static com.google.inject.name.Names.named;
 
+import java.io.File;
+import java.util.List;
+import java.util.Set;
+
+import net.freifunk.hamburg.autodeploy.devices.Device;
 import net.freifunk.hamburg.autodeploy.devices.DeviceDeployer;
 
 import org.apache.commons.cli.CommandLine;
@@ -14,9 +19,12 @@ import org.apache.commons.cli.PosixParser;
 import org.openqa.selenium.WebDriver;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Ordering;
+import com.google.inject.ConfigurationException;
 import com.google.inject.Guice;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 
 /**
  * Main class for auto deployer.
@@ -26,16 +34,16 @@ import com.google.inject.Injector;
 public class Main {
 
     private static final String HELP_OPTION = "h";
+    private static final String LIST_MODELS_OPTION = "l";
     private static final String FIRMWARE_OPTION = "f";
     private static final String PASSWORD_OPTION = "p";
     private static final String NODENAME_OPTION = "n";
+    private static final String MODEL_OPTION = "m";
 
-    @Inject private DeviceDeployer _deployer;
-    @Inject private WebDriver _webDriver;
+    private final Injector _injector;
 
     public Main() {
-        final Injector injector = Guice.createInjector(new AutoDeployModule());
-        injector.injectMembers(this);
+        _injector = Guice.createInjector(new AutoDeployModule());
     }
 
     /**
@@ -44,9 +52,11 @@ public class Main {
     public static void main(final String[] args) {
         final Options options = new Options();
         options.addOption(new Option(HELP_OPTION, "help", false, "Show this help."));
+        options.addOption(new Option(LIST_MODELS_OPTION, "list-models", false, "List supported models."));
         options.addOption(new Option(FIRMWARE_OPTION, "firmware", true, "The firmware image."));
         options.addOption(new Option(PASSWORD_OPTION, "password", true, "The new root password for the device."));
         options.addOption(new Option(NODENAME_OPTION, "nodename", true, "The name for the node. Will also be the hostname."));
+        options.addOption(new Option(MODEL_OPTION, "model", true, "The model."));
 
         final CommandLineParser parser = new PosixParser();
         CommandLine commandLine;
@@ -61,6 +71,12 @@ public class Main {
         if (commandLine.hasOption(HELP_OPTION)) {
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.printHelp("ff-autodeploy", options);
+            System.exit(0);
+        }
+
+        if (commandLine.hasOption(LIST_MODELS_OPTION)) {
+            new Main().listModels();
+            System.exit(0);
         }
 
         final String firmwareFileString = getArgValue(commandLine, FIRMWARE_OPTION, "No firmware image specified.", 1);
@@ -78,8 +94,9 @@ public class Main {
 
         final String password = getArgValue(commandLine, PASSWORD_OPTION, "Root password not set.", 4);
         final String nodename = getArgValue(commandLine, NODENAME_OPTION, "Node name not set.", 5);
+        final String model = getArgValue(commandLine, MODEL_OPTION, "Model not set.", 6);
 
-        new Main().run(firmwareImage, password, nodename);
+        new Main().deploy(firmwareImage, password, nodename, model);
     }
 
     private static String getArgValue(
@@ -98,12 +115,41 @@ public class Main {
         return value;
     }
 
-    private void run(final File firmwareImage, final String password, final String nodename) {
+    private void listModels() {
+        final Set<Device> supportedDevices = getSupportedDevices();
+        final List<Device> sortedDevices = Ordering.<Device>natural().sortedCopy(supportedDevices);
+
+        final StringBuilder output = new StringBuilder();
+        output.append("Supported models:");
+        for (final Device device: sortedDevices) {
+            output.append("\n    ");
+            output.append(device.getModel());
+            output.append(" ");
+            output.append(device.getVersion());
+        }
+        System.out.println(output.toString());
+    }
+
+    private Set<Device> getSupportedDevices() {
+        return _injector.getInstance(Key.get(new TypeLiteral<Set<Device>>(){}));
+    }
+
+    private DeviceDeployer getDeployer(final String model) {
         try {
-            _deployer.deploy(firmwareImage, password, nodename);
+            return _injector.getInstance(Key.get(DeviceDeployer.class, named(model)));
+        } catch (final ConfigurationException e) {
+            System.err.println("No device deployer registered for model: " + model);
+            System.exit(254);
+            return null; // the compiler doesn't get the exit
+        }
+    }
+
+    private void deploy(final File firmwareImage, final String password, final String nodename, final String model) {
+        try {
+            getDeployer(model).deploy(firmwareImage, password, nodename);
         } finally {
             // tear down selenium
-            _webDriver.close();
+            _injector.getInstance(WebDriver.class).close();
         }
     }
 }
