@@ -13,6 +13,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.openqa.selenium.WebDriver;
 
+import com.google.common.base.Strings;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -26,6 +27,8 @@ public class Main {
 
     private static final String HELP_OPTION = "h";
     private static final String FIRMWARE_OPTION = "f";
+    private static final String PASSWORD_OPTION = "p";
+    private static final String NODENAME_OPTION = "n";
 
     @Inject private DeviceDeployer _deployer;
     @Inject private WebDriver _webDriver;
@@ -42,6 +45,8 @@ public class Main {
         final Options options = new Options();
         options.addOption(new Option(HELP_OPTION, "help", false, "Show this help."));
         options.addOption(new Option(FIRMWARE_OPTION, "firmware", true, "The firmware image."));
+        options.addOption(new Option(PASSWORD_OPTION, "password", true, "The new root password for the device."));
+        options.addOption(new Option(NODENAME_OPTION, "nodename", true, "The name for the node. Will also be the hostname."));
 
         final CommandLineParser parser = new PosixParser();
         CommandLine commandLine;
@@ -60,7 +65,7 @@ public class Main {
 
         final String firmwareFileString = commandLine.getOptionValue(FIRMWARE_OPTION);
 
-        if (firmwareFileString == null) {
+        if (Strings.isNullOrEmpty(firmwareFileString)) {
             System.err.println("No firmware image specified.");
             System.exit(1);
         }
@@ -77,12 +82,26 @@ public class Main {
             System.exit(3);
         }
 
-        new Main().run(firmwareImage);
+        final String password = commandLine.getOptionValue(PASSWORD_OPTION);
+
+        if (Strings.isNullOrEmpty(password)) {
+            System.err.println("Root password not set.");
+            System.exit(4);
+        }
+
+        final String nodename = commandLine.getOptionValue(NODENAME_OPTION);
+
+        if (Strings.isNullOrEmpty(nodename)) {
+            System.err.println("Node name not set.");
+            System.exit(5);
+        }
+
+        new Main().run(firmwareImage, password, nodename);
     }
 
-    private void run(final File firmwareImage) {
+    private void run(final File firmwareImage, final String password, final String nodename) {
         try {
-            _deployer.deploy(firmwareImage);
+            _deployer.deploy(firmwareImage, password, nodename);
         } finally {
             // tear down selenium
             _webDriver.close();

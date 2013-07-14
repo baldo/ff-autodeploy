@@ -35,7 +35,7 @@ public class AutoDeployModule extends AbstractModule {
     @Provides
     @Singleton
     private WebDriverWait provideWebDriverWait(final WebDriver webDriver) {
-        final WebDriverWait webDriverWait = new WebDriverWait(webDriver, 5 /* seconds */);
+        final WebDriverWait webDriverWait = new WebDriverWait(webDriver, 10 /* seconds */);
         return webDriverWait;
     }
 }

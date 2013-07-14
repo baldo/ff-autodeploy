@@ -10,7 +10,7 @@ import java.io.File;
 public interface DeviceDeployer {
 
     /**
-     * Deploys the specified firmware image.
+     * Deploys the specified firmware image. The given password will be set for the root user on the device.
      */
-    void deploy(File firmwareImage);
+    void deploy(File firmwareImage, String password, String nodename);
 }
