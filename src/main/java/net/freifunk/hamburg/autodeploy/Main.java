@@ -63,13 +63,7 @@ public class Main {
             helpFormatter.printHelp("ff-autodeploy", options);
         }
 
-        final String firmwareFileString = commandLine.getOptionValue(FIRMWARE_OPTION);
-
-        if (Strings.isNullOrEmpty(firmwareFileString)) {
-            System.err.println("No firmware image specified.");
-            System.exit(1);
-        }
-
+        final String firmwareFileString = getArgValue(commandLine, FIRMWARE_OPTION, "No firmware image specified.", 1);
         final File firmwareImage = new File(firmwareFileString);
 
         if (!firmwareImage.exists()) {
@@ -82,21 +76,26 @@ public class Main {
             System.exit(3);
         }
 
-        final String password = commandLine.getOptionValue(PASSWORD_OPTION);
-
-        if (Strings.isNullOrEmpty(password)) {
-            System.err.println("Root password not set.");
-            System.exit(4);
-        }
-
-        final String nodename = commandLine.getOptionValue(NODENAME_OPTION);
-
-        if (Strings.isNullOrEmpty(nodename)) {
-            System.err.println("Node name not set.");
-            System.exit(5);
-        }
+        final String password = getArgValue(commandLine, PASSWORD_OPTION, "Root password not set.", 4);
+        final String nodename = getArgValue(commandLine, NODENAME_OPTION, "Node name not set.", 5);
 
         new Main().run(firmwareImage, password, nodename);
+    }
+
+    private static String getArgValue(
+        final CommandLine commandLine,
+        final String option,
+        final String errorMessage,
+        final int exitCode
+    ) {
+        final String value = Strings.nullToEmpty(commandLine.getOptionValue(option)).trim();
+
+        if (value.isEmpty()) {
+            System.err.println(errorMessage);
+            System.exit(exitCode);
+        }
+
+        return value;
     }
 
     private void run(final File firmwareImage, final String password, final String nodename) {

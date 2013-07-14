@@ -54,3 +54,10 @@ tasks.jar {
         'Built-Gradle': gradle.gradleVersion
     )
 }
+
+// allow passing commandline arguments to the task run
+tasks.run {
+    if(project.hasProperty('deployArgs')){
+        args deployArgs
+    }
+}
