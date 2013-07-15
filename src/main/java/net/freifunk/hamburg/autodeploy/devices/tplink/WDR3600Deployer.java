@@ -11,21 +11,22 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 
 /**
- * Deploys the Freifunk firmware to the WR841N.
+ * Deploys the Freifunk firmware to the WR842ND.
  *
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
-public class WR841NDeployer extends AbstractTPLinkDeployer {
+public class WDR3600Deployer extends AbstractTPLinkDeployer {
 
-    public static final String MODEL_NAME = "WR841N";
+    public static final String MODEL_NAME = "WDR3600";
     public static final Set<Device> SUPPORTED_DEVICES = ImmutableSet.of(
-        new Device(MODEL_NAME, "v8")
+        new Device(MODEL_NAME, "v1")
     );
 
     @Inject
-    public WR841NDeployer(final WebDriver webDriver, final WebDriverWait wait) {
+    public WDR3600Deployer(final WebDriver webDriver, final WebDriverWait wait) {
         super(
             SUPPORTED_DEVICES,
+
             webDriver,
             wait
         );

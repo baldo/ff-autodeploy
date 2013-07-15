@@ -38,6 +38,8 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
 
     // menu
     private static final String MENU_FRAME_NAME = "bottomLeftFrame";
+    private static final By SYSTEM_TOOLS_MENU_ITEM = By.xpath("//a[contains(text(),'System Tools')]");
+    private static final By FIRMWARE_UPGRADE_MENU_ITEM = By.xpath("//a[contains(text(),'Firmware Upgrade')]");
 
     // status page
     private static final By HARDWARE_VERSION = By.cssSelector("#hversion");
@@ -64,9 +66,6 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
 
     private final Set<Device> _supportedDevices;
 
-    private final By _systemToolsMenuItem;
-    private final By _firmwareUpgradeMenuItem;
-
     private final WebDriver _webDriver;
     private final WebDriverWait _wait;
 
@@ -74,15 +73,10 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
 
     protected AbstractTPLinkDeployer(
         final Set<Device> supportedDevices,
-        final By systemToolsMenuItem,
-        final By firmwareUpgradeMenuItem,
         final WebDriver webDriver,
         final WebDriverWait wait
     ) {
         _supportedDevices = supportedDevices;
-
-        _systemToolsMenuItem = systemToolsMenuItem;
-        _firmwareUpgradeMenuItem = firmwareUpgradeMenuItem;
 
         _webDriver = webDriver;
         _wait = wait;
@@ -136,14 +130,14 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
     private void openFirmwareUpgradePage() {
         selectFrame(MENU_FRAME_NAME);
 
-        _wait.until(elementToBeClickable(_systemToolsMenuItem));
-        _webDriver.findElement(_systemToolsMenuItem).click();
+        _wait.until(elementToBeClickable(SYSTEM_TOOLS_MENU_ITEM));
+        _webDriver.findElement(SYSTEM_TOOLS_MENU_ITEM).click();
 
-        _wait.until(elementToBeClickable(_firmwareUpgradeMenuItem));
+        _wait.until(elementToBeClickable(FIRMWARE_UPGRADE_MENU_ITEM));
     }
 
     private void startFirmwareUpgrade(final File firmwareImage) {
-        _webDriver.findElement(_firmwareUpgradeMenuItem).click();
+        _webDriver.findElement(FIRMWARE_UPGRADE_MENU_ITEM).click();
 
         selectFrame(MAIN_FRAME_NAME);
 

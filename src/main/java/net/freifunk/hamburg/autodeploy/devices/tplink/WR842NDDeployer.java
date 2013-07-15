@@ -4,7 +4,6 @@ import java.util.Set;
 
 import net.freifunk.hamburg.autodeploy.devices.Device;
 
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -23,17 +22,10 @@ public class WR842NDDeployer extends AbstractTPLinkDeployer {
         new Device(MODEL_NAME, "v1")
     );
 
-    private static final By SYSTEM_TOOLS_MENU_ITEM = By.cssSelector("#a53");
-    private static final By FIRMWARE_UPGRADE_MENU_ITEM = By.cssSelector("#a56");
-
     @Inject
     public WR842NDDeployer(final WebDriver webDriver, final WebDriverWait wait) {
         super(
             SUPPORTED_DEVICES,
-
-            SYSTEM_TOOLS_MENU_ITEM,
-            FIRMWARE_UPGRADE_MENU_ITEM,
-
             webDriver,
             wait
         );

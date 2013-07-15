@@ -7,6 +7,7 @@ import java.util.Set;
 
 import net.freifunk.hamburg.autodeploy.devices.Device;
 import net.freifunk.hamburg.autodeploy.devices.DeviceDeployer;
+import net.freifunk.hamburg.autodeploy.devices.tplink.WDR3600Deployer;
 import net.freifunk.hamburg.autodeploy.devices.tplink.WR841NDeployer;
 import net.freifunk.hamburg.autodeploy.devices.tplink.WR842NDDeployer;
 
@@ -45,6 +46,7 @@ public class AutoDeployModule extends AbstractModule {
         final Multibinder<Device> deviceBinder = Multibinder.newSetBinder(binder(), Device.class);
         bindDeployer(deviceBinder, WR841NDeployer.class);
         bindDeployer(deviceBinder, WR842NDDeployer.class);
+        bindDeployer(deviceBinder, WDR3600Deployer.class);
     }
 
     @Provides
