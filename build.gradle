@@ -29,6 +29,7 @@ repositories {
 dependencies {
     compile \
         'org.seleniumhq.selenium:selenium-support:2.33.0',
+        'org.seleniumhq.selenium:selenium-htmlunit-driver:2.33.0',
         'org.seleniumhq.selenium:selenium-firefox-driver:2.33.0',
         'com.google.guava:guava:14.0.1',
         'com.google.inject:guice:3.0',
@@ -58,7 +59,7 @@ tasks.jar {
 
 // allow passing commandline arguments to the task run
 tasks.run {
-    if(project.hasProperty('deployArgs')){
+    if (project.hasProperty('deployArgs')){
         args deployArgs
     }
 }

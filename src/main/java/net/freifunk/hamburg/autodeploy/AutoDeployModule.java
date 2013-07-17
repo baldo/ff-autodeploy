@@ -12,7 +12,7 @@ import net.freifunk.hamburg.autodeploy.devices.tplink.WR841NDeployer;
 import net.freifunk.hamburg.autodeploy.devices.tplink.WR842NDDeployer;
 
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.google.inject.AbstractModule;
@@ -52,7 +52,8 @@ public class AutoDeployModule extends AbstractModule {
     @Provides
     @Singleton
     private WebDriver provideWebDriver() {
-        final FirefoxDriver webDriver = new FirefoxDriver();
+        final HtmlUnitDriver webDriver = new HeadlessDriver();
+//        final FirefoxDriver webDriver = new FirefoxDriver();
         return webDriver;
     }
 

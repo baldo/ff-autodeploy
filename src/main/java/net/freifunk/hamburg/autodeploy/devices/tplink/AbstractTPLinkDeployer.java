@@ -18,8 +18,8 @@ import java.util.regex.Pattern;
 import net.freifunk.hamburg.autodeploy.devices.Device;
 import net.freifunk.hamburg.autodeploy.devices.DeviceDeployer;
 
-import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -33,7 +33,13 @@ import com.google.common.base.Splitter;
  */
 public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
 
-    private static final String TP_LINK_WEB_INTERFACE_URL = "http://admin:admin@192.168.0.1";
+    private static final String TP_LINK_WEB_INTERFACE_IP = "192.168.0.1";
+    private static final String TP_LINK_WEB_INTERFACE_USER = "admin";
+    private static final String TP_LINK_WEB_INTERFACE_PASSWORD = "admin";
+
+    private static final String TP_LINK_WEB_INTERFACE_URL =
+        "http://" + TP_LINK_WEB_INTERFACE_USER + ":" + TP_LINK_WEB_INTERFACE_PASSWORD + "@" + TP_LINK_WEB_INTERFACE_IP;
+
     private static final String CONFIG_MODE_URL = "http://192.168.1.1";
 
     // menu
@@ -42,15 +48,13 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
     private static final By FIRMWARE_UPGRADE_MENU_ITEM = By.xpath("//a[contains(text(),'Firmware Upgrade')]");
 
     // status page
-    private static final By HARDWARE_VERSION = By.cssSelector("#hversion");
+    private static final By HARDWARE_VERSION = By.id("hversion");
 
     // firmware upgrade page
     private static final String MAIN_FRAME_NAME = "mainFrame";
 
     private static final By FIRMWARE_FILE_CHOOSER = By.cssSelector("input[type=file]");
     private static final By FIRMWARE_UPGRADE_BUTTON = By.cssSelector("input[name=Upgrade]");
-
-    private static final String EXPECTED_PROMPT_TEXT = "Are you sure to upgrade the firmware?";
 
     // config mode
     private static final By START_CONFIGURATION_LINK = By.cssSelector(".actions .btn.primary");
@@ -114,7 +118,8 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
         selectFrame(MAIN_FRAME_NAME);
         _wait.until(presenceOfElementLocated(HARDWARE_VERSION));
 
-        final String hardwareVersionString = _webDriver.findElement(HARDWARE_VERSION).getText();
+        final WebElement hardwareVersionElement = _webDriver.findElement(HARDWARE_VERSION);
+        final String hardwareVersionString = hardwareVersionElement.getText();
         final Iterator<String> parts = Splitter.on(' ').trimResults().split(hardwareVersionString).iterator();
 
         final String model = parts.next();
@@ -142,18 +147,15 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
         selectFrame(MAIN_FRAME_NAME);
 
         _wait.until(elementToBeClickable(FIRMWARE_UPGRADE_BUTTON));
-        _webDriver.findElement(FIRMWARE_FILE_CHOOSER).sendKeys(firmwareImage.getAbsoluteFile().getPath());
+
+        final WebElement findElement = _webDriver.findElement(FIRMWARE_FILE_CHOOSER);
+        findElement.sendKeys(firmwareImage.getAbsoluteFile().getPath());
+
+        // disable checking of firmware as this is not very reliable and requires unnecessarily complicated handling
+        final JavascriptExecutor javascriptExecutor = (JavascriptExecutor) _webDriver;
+        javascriptExecutor.executeScript("doSubmit = function () { return true; }");
+
         _webDriver.findElement(FIRMWARE_UPGRADE_BUTTON).click();
-
-        final Alert prompt = _webDriver.switchTo().alert();
-        final String promptText = prompt.getText();
-
-        if (!EXPECTED_PROMPT_TEXT.equals(promptText)) {
-            prompt.dismiss();
-            throw new IllegalStateException("Unexpected prompt message: " + promptText);
-        }
-
-        prompt.accept();
     }
 
     private void waitForReboot() {
