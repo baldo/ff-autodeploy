@@ -23,7 +23,10 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 
 /**
@@ -32,6 +35,8 @@ import com.google.common.base.Splitter;
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
 public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractTPLinkDeployer.class);
 
     private static final String TP_LINK_WEB_INTERFACE_IP = "192.168.0.1";
     private static final String TP_LINK_WEB_INTERFACE_USER = "admin";
@@ -88,13 +93,132 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
         _window = _webDriver.getWindowHandle();
     }
 
-    private void selectFrame(final String frameName) {
+    private void switchToWindow() {
+        LOG.debug("switchToWindow: {}", _window);
         _webDriver.switchTo().window(_window);
+        LOG.debug("switchToWindow done: {}", _window);
+    }
+
+    private void navigateTo(final String url) {
+        LOG.debug("navigateTo: {}", url);
+        switchToWindow();
+        _webDriver.navigate().to(url);
+        LOG.debug("navigateTo done: {}", url);
+    }
+
+    private void selectFrame(final String frameName) {
+        LOG.debug("selectFrame: {}", frameName);
+        switchToWindow();
         _wait.until(frameToBeAvailableAndSwitchToIt(frameName));
+        LOG.debug("selectFrame done: {}", frameName);
+    }
+
+    private void waitForElement(final By by) {
+        LOG.debug("waitForElement: {}", by);
+        _wait.until(presenceOfElementLocated(by));
+        LOG.debug("waitForElement done: {}", by);
+    }
+
+    private void waitForClickableElement(final By by) {
+        LOG.debug("waitForClickableElement: {}", by);
+        _wait.until(elementToBeClickable(by));
+        LOG.debug("waitForClickableElement done: {}", by);
+    }
+
+    private void waitForTitleContaining(final String substring) {
+        LOG.debug("waitForTitleContaining: {}", substring);
+        _wait.until(titleContains(substring));
+        LOG.debug("waitForTitleContaining done: {}", substring);
+    }
+
+    private WebElement getElement(final By by) {
+        LOG.debug("getElement: {}", by);
+        waitForElement(by);
+        final WebElement element = _webDriver.findElement(by);
+        LOG.debug("getElement done: {}", by);
+        return element;
+    }
+
+    private String getTextOfElement(final By by) {
+        LOG.debug("getTextOfElement: {}", by);
+        final WebElement element = getElement(by);
+        final String text = element.getText();
+        LOG.debug("getTextOfElement done: {} => {}", by, text);
+        return text;
+    }
+
+    private void clickElement(final By by) {
+        LOG.debug("clickElement: {}", by);
+        waitForClickableElement(by);
+        final WebElement element = getElement(by);
+        element.click();
+        LOG.debug("clickElement done: {}", by);
+    }
+
+    private void chooseFile(final By by, final File file) {
+        LOG.debug("chooseFile: {}, {}", by, file);
+        final WebElement element = getElement(by);
+        Preconditions.checkState(
+            "input".equals(element.getTagName()) && "file".equals(element.getAttribute("type")),
+            "Element should be a file input: {}",
+            element
+        );
+        element.sendKeys(file.getAbsoluteFile().getPath());
+        LOG.debug("chooseFile done: {}, {}", by, file);
+    }
+
+    private void typeIntoTextInput(final By by, final String text) {
+        LOG.debug("typeIntoTextInput: {}, {}", by, text);
+        final WebElement element = getElement(by);
+        element.clear();
+        Preconditions.checkState(
+            "input".equals(element.getTagName()) && "text".equals(element.getAttribute("type")),
+            "Element should be a text input: {}",
+            element
+        );
+        element.sendKeys(text);
+        LOG.debug("typeIntoTextInput done: {}, {}", by, text);
+    }
+
+    private void typeIntoPasswordInput(final By by, final String password) {
+        LOG.debug("typeIntoPasswordInput: {}, ********", by);
+        final WebElement element = getElement(by);
+        element.clear();
+        Preconditions.checkState(
+            "input".equals(element.getTagName()) && "password".equals(element.getAttribute("type")),
+            "Element should be a password input: {}",
+            element
+        );
+        element.sendKeys(password);
+        LOG.debug("typeIntoPasswordInput done: {}, ********", by);
+    }
+
+    private void updateCheckbox(final By by, final boolean checked) {
+        LOG.debug("updateCheckbox: {}, {}", by, checked);
+        waitForClickableElement(by);
+        final WebElement checkbox = getElement(by);
+        Preconditions.checkState(
+            "input".equals(checkbox.getTagName()) && "checkbox".equals(checkbox.getAttribute("type")),
+            "Element should be a checkbox: {}",
+            checkbox
+        );
+        if (checkbox.isSelected() != checked) {
+            checkbox.click();
+        }
+        _wait.until(elementSelectionStateToBe(MESH_VIA_VPN_CHECKBOX, checked));
+        LOG.debug("updateCheckbox done: {}, {}", by, checked);
+    }
+
+    private void executeJavascript(final String js) {
+        LOG.debug("executeJavascript: {}", js);
+        final JavascriptExecutor javascriptExecutor = (JavascriptExecutor) _webDriver;
+        javascriptExecutor.executeScript(js);
+        LOG.debug("executeJavascript done: {}", js);
     }
 
     @Override
     public void deploy(final File firmwareImage, final String password, final String nodename) {
+        LOG.info("Starting deployment: firmware = {}, nodename = {}", firmwareImage, nodename);
         goToWebInterface();
         ensureSupportedDevice();
         openFirmwareUpgradePage();
@@ -111,51 +235,43 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
     }
 
     private void goToWebInterface() {
-        _webDriver.navigate().to(TP_LINK_WEB_INTERFACE_URL);
+        navigateTo(TP_LINK_WEB_INTERFACE_URL);
     }
 
     private void ensureSupportedDevice() {
         selectFrame(MAIN_FRAME_NAME);
-        _wait.until(presenceOfElementLocated(HARDWARE_VERSION));
+        final String hardwareVersionString = getTextOfElement(HARDWARE_VERSION);
 
-        final WebElement hardwareVersionElement = _webDriver.findElement(HARDWARE_VERSION);
-        final String hardwareVersionString = hardwareVersionElement.getText();
-        final Iterator<String> parts = Splitter.on(' ').trimResults().split(hardwareVersionString).iterator();
-
-        final String model = parts.next();
-        final String version = parts.next();
-
-        final Device device = new Device(model, version);
+        final Device device = hardwareVersionToDevice(hardwareVersionString);
 
         if (!_supportedDevices.contains(device)) {
             throw new IllegalStateException("Unsupported device: " + device);
         }
     }
 
+    private Device hardwareVersionToDevice(final String hardwareVersionString) {
+        final Iterator<String> parts = Splitter.on(' ').trimResults().split(hardwareVersionString).iterator();
+        final String model = parts.next();
+        final String version = parts.next();
+
+        final Device device = new Device(model, version);
+        return device;
+    }
+
     private void openFirmwareUpgradePage() {
         selectFrame(MENU_FRAME_NAME);
-
-        _wait.until(elementToBeClickable(SYSTEM_TOOLS_MENU_ITEM));
-        _webDriver.findElement(SYSTEM_TOOLS_MENU_ITEM).click();
-
-        _wait.until(elementToBeClickable(FIRMWARE_UPGRADE_MENU_ITEM));
+        clickElement(SYSTEM_TOOLS_MENU_ITEM);
+        clickElement(FIRMWARE_UPGRADE_MENU_ITEM);
     }
 
     private void startFirmwareUpgrade(final File firmwareImage) {
-        _webDriver.findElement(FIRMWARE_UPGRADE_MENU_ITEM).click();
-
         selectFrame(MAIN_FRAME_NAME);
-
-        _wait.until(elementToBeClickable(FIRMWARE_UPGRADE_BUTTON));
-
-        final WebElement findElement = _webDriver.findElement(FIRMWARE_FILE_CHOOSER);
-        findElement.sendKeys(firmwareImage.getAbsoluteFile().getPath());
+        chooseFile(FIRMWARE_FILE_CHOOSER, firmwareImage);
 
         // disable checking of firmware as this is not very reliable and requires unnecessarily complicated handling
-        final JavascriptExecutor javascriptExecutor = (JavascriptExecutor) _webDriver;
-        javascriptExecutor.executeScript("doSubmit = function () { return true; }");
+        executeJavascript("doSubmit = function () { return true; }");
 
-        _webDriver.findElement(FIRMWARE_UPGRADE_BUTTON).click();
+        clickElement(FIRMWARE_UPGRADE_BUTTON);
     }
 
     private void waitForReboot() {
@@ -171,56 +287,34 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
     }
 
     private void goToConfigMode() {
-        _webDriver.switchTo().window(_window);
-        _webDriver.navigate().to(CONFIG_MODE_URL);
-        _wait.until(titleContains("Freifunk"));
+        switchToWindow();
+        navigateTo(CONFIG_MODE_URL);
+        waitForTitleContaining("Freifunk");
     }
 
     private void startConfiguration() {
-        _wait.until(presenceOfElementLocated(START_CONFIGURATION_LINK));
-        _webDriver.findElement(START_CONFIGURATION_LINK).click();
+        clickElement(START_CONFIGURATION_LINK);
     }
 
     private void setPassword(final String password) {
-        _wait.until(presenceOfElementLocated(PASSWORD_FIELD1));
-        _webDriver.findElement(PASSWORD_FIELD1).sendKeys(password);
-
-        _wait.until(presenceOfElementLocated(PASSWORD_FIELD2));
-        _webDriver.findElement(PASSWORD_FIELD2).sendKeys(password);
-
-        _wait.until(elementToBeClickable(NEXT_BUTTON));
-        _webDriver.findElement(NEXT_BUTTON).click();
+        typeIntoPasswordInput(PASSWORD_FIELD1, password);
+        typeIntoPasswordInput(PASSWORD_FIELD2, password);
+        clickElement(NEXT_BUTTON);
     }
 
     private void setHostName(final String hostname) {
-        _wait.until(presenceOfElementLocated(HOSTNAME_FIELD));
-        final WebElement hostnameField = _webDriver.findElement(HOSTNAME_FIELD);
-        hostnameField.clear();
-        hostnameField.sendKeys(hostname);
-
-        _wait.until(elementToBeClickable(NEXT_BUTTON));
-        _webDriver.findElement(NEXT_BUTTON).click();
+        typeIntoTextInput(HOSTNAME_FIELD, hostname);
+        clickElement(NEXT_BUTTON);
     }
 
     private void activateVPN() {
-        _wait.until(elementToBeClickable(MESH_VIA_VPN_CHECKBOX));
-        final WebElement checkbox = _webDriver.findElement(MESH_VIA_VPN_CHECKBOX);
-        if (!checkbox.isSelected()) {
-            checkbox.click();
-        }
-        _wait.until(elementSelectionStateToBe(MESH_VIA_VPN_CHECKBOX, true /* selected */));
-
+        updateCheckbox(MESH_VIA_VPN_CHECKBOX, true);
         // TODO: Allow setting bandwidth limit.
-
-        _wait.until(elementToBeClickable(NEXT_BUTTON));
-        _webDriver.findElement(NEXT_BUTTON).click();
+        clickElement(NEXT_BUTTON);
 
         getVPNKey();
-
         // TODO: Fill in webform.
-
-        _wait.until(elementToBeClickable(NEXT_BUTTON));
-        _webDriver.findElement(NEXT_BUTTON).click();
+        clickElement(NEXT_BUTTON);
     }
 
     private String getVPNKey() {
@@ -243,7 +337,6 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
 
     private void bootIntoRegularMode() {
         _wait.until(textToBePresentInElement(CONFIGURATION_HEADLINE, CONFIGURATION_DONE_HEADLINE));
-        _wait.until(elementToBeClickable(REBOOT_BUTTON));
-        _webDriver.findElement(REBOOT_BUTTON).click();
+        clickElement(REBOOT_BUTTON);
     }
 }
