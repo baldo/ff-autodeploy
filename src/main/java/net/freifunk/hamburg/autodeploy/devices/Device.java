@@ -1,7 +1,10 @@
 package net.freifunk.hamburg.autodeploy.devices;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Iterables;
 
 /**
  * A device having a model and hardware version.
@@ -32,6 +35,22 @@ public class Device implements Comparable<Device> {
             .compare(this._model, other._model)
             .compare(this._version, other._version)
         .result();
+    }
+
+    public static Device fromString(final String deviceString) {
+        final Iterable<String> parts = Splitter.on('-').split(deviceString);
+        Preconditions.checkArgument(Iterables.size(parts) == 2);
+        final String model = Iterables.get(parts, 0);
+        final String version = Iterables.get(parts, 1);
+        return new Device(model, version);
+    }
+
+    public String asString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append(_model);
+        builder.append('-');
+        builder.append(_version);
+        return builder.toString();
     }
 
     @Override

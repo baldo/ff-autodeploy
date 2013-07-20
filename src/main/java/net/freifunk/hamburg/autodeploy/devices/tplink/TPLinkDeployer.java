@@ -28,15 +28,24 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
+import com.google.inject.Inject;
 
 /**
  * Deploys the Freifunk firmware to TP-Link devices.
  *
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
-public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
+public class TPLinkDeployer implements DeviceDeployer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractTPLinkDeployer.class);
+    public static final Set<Device> SUPPORTED_DEVICES = ImmutableSet.of(
+        new Device("WDR3600", "v1"),
+        new Device("WR741ND", "v4"),
+        new Device("WR841N", "v8"),
+        new Device("WR842ND", "v1")
+    );
+
+    private static final Logger LOG = LoggerFactory.getLogger(TPLinkDeployer.class);
 
     private static final String TP_LINK_WEB_INTERFACE_IP = "192.168.0.1";
     private static final String TP_LINK_WEB_INTERFACE_USER = "admin";
@@ -73,20 +82,16 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
     private static final By REBOOT_BUTTON = By.cssSelector(".btn.primary");
     private static final String CONFIGURATION_DONE_HEADLINE = "Konfiguration abgeschlossen";
 
-    private final Set<Device> _supportedDevices;
-
     private final WebDriver _webDriver;
     private final WebDriverWait _wait;
 
     private final String _window;
 
-    protected AbstractTPLinkDeployer(
-        final Set<Device> supportedDevices,
+    @Inject
+    public TPLinkDeployer(
         final WebDriver webDriver,
         final WebDriverWait wait
     ) {
-        _supportedDevices = supportedDevices;
-
         _webDriver = webDriver;
         _wait = wait;
 
@@ -244,7 +249,7 @@ public abstract class AbstractTPLinkDeployer implements DeviceDeployer {
 
         final Device device = hardwareVersionToDevice(hardwareVersionString);
 
-        if (!_supportedDevices.contains(device)) {
+        if (!SUPPORTED_DEVICES.contains(device)) {
             throw new IllegalStateException("Unsupported device: " + device);
         }
     }

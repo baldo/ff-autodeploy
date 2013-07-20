@@ -7,10 +7,7 @@ import java.util.Set;
 
 import net.freifunk.hamburg.autodeploy.devices.Device;
 import net.freifunk.hamburg.autodeploy.devices.DeviceDeployer;
-import net.freifunk.hamburg.autodeploy.devices.tplink.WDR3600Deployer;
-import net.freifunk.hamburg.autodeploy.devices.tplink.WR741NDDeployer;
-import net.freifunk.hamburg.autodeploy.devices.tplink.WR841NDeployer;
-import net.freifunk.hamburg.autodeploy.devices.tplink.WR842NDDeployer;
+import net.freifunk.hamburg.autodeploy.devices.tplink.TPLinkDeployer;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
@@ -32,10 +29,10 @@ public class AutoDeployModule extends AbstractModule {
     @SuppressWarnings("unchecked")
     private void bindDeployer(final Multibinder<Device> deviceBinder, final Class<? extends DeviceDeployer> cls) {
         try {
-            bind(DeviceDeployer.class).annotatedWith(named((String) cls.getField("MODEL_NAME").get(null))).to(cls).in(SINGLETON);
 
             for (final Device device: (Set<Device>) cls.getField("SUPPORTED_DEVICES").get(null)) {
                 deviceBinder.addBinding().toInstance(device);
+                bind(DeviceDeployer.class).annotatedWith(named(device.asString())).to(cls).in(SINGLETON);
             }
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             throw new IllegalStateException("Could not bind deployer: " + cls, e);
@@ -45,10 +42,7 @@ public class AutoDeployModule extends AbstractModule {
     @Override
     protected void configure() {
         final Multibinder<Device> deviceBinder = Multibinder.newSetBinder(binder(), Device.class);
-        bindDeployer(deviceBinder, WR741NDDeployer.class);
-        bindDeployer(deviceBinder, WR841NDeployer.class);
-        bindDeployer(deviceBinder, WR842NDDeployer.class);
-        bindDeployer(deviceBinder, WDR3600Deployer.class);
+        bindDeployer(deviceBinder, TPLinkDeployer.class);
     }
 
     @Provides

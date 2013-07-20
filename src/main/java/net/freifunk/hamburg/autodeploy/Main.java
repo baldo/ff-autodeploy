@@ -123,9 +123,7 @@ public class Main {
         output.append("Supported models:");
         for (final Device device: sortedDevices) {
             output.append("\n    ");
-            output.append(device.getModel());
-            output.append(" ");
-            output.append(device.getVersion());
+            output.append(device.asString());
         }
         System.out.println(output.toString());
     }
