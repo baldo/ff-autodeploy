@@ -1,4 +1,4 @@
-package net.freifunk.hamburg.autodeploy;
+package net.freifunk.autodeploy;
 
 import java.net.URL;
 

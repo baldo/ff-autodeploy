@@ -39,7 +39,7 @@ dependencies {
 }
 
 // creating the standalone jar
-mainClassName = 'net.freifunk.hamburg.autodeploy.Main'
+mainClassName = 'net.freifunk.autodeploy.Main'
 
 tasks.jar {
     description = 'Creates JAR containing all dependencies.'

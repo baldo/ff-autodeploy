@@ -1,13 +1,18 @@
-package net.freifunk.hamburg.autodeploy;
+package net.freifunk.autodeploy;
 
 import static com.google.inject.Scopes.SINGLETON;
 import static com.google.inject.name.Names.named;
 
 import java.util.Set;
 
-import net.freifunk.hamburg.autodeploy.devices.Device;
-import net.freifunk.hamburg.autodeploy.devices.DeviceDeployer;
-import net.freifunk.hamburg.autodeploy.devices.tplink.TPLinkDeployer;
+import net.freifunk.autodeploy.device.Device;
+import net.freifunk.autodeploy.device.DeviceDeployer;
+import net.freifunk.autodeploy.device.tplink.TPLinkDeployer;
+import net.freifunk.autodeploy.firmware.Firmware;
+import net.freifunk.autodeploy.firmware.FirmwareConfigurator;
+import net.freifunk.autodeploy.firmware.FreifunkHamburgConfigurator;
+import net.freifunk.autodeploy.selenium.Actor;
+import net.freifunk.autodeploy.selenium.ActorImpl;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
@@ -39,10 +44,27 @@ public class AutoDeployModule extends AbstractModule {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private void bindConfigurator(final Multibinder<Firmware> firmwareBinder, final Class<? extends FirmwareConfigurator> cls) {
+        try {
+            for (final Firmware firmware: (Set<Firmware>) cls.getField("SUPPORTED_FIRMWARES").get(null)) {
+                firmwareBinder.addBinding().toInstance(firmware);
+                bind(FirmwareConfigurator.class).annotatedWith(named(firmware.getName())).to(cls).in(SINGLETON);
+            }
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            throw new IllegalStateException("Could not bind configurator: " + cls, e);
+        }
+    }
+
     @Override
     protected void configure() {
         final Multibinder<Device> deviceBinder = Multibinder.newSetBinder(binder(), Device.class);
         bindDeployer(deviceBinder, TPLinkDeployer.class);
+
+        final Multibinder<Firmware> firmwareBinder = Multibinder.newSetBinder(binder(), Firmware.class);
+        bindConfigurator(firmwareBinder, FreifunkHamburgConfigurator.class);
+
+        bind(Actor.class).to(ActorImpl.class).in(SINGLETON);
     }
 
     @Provides
