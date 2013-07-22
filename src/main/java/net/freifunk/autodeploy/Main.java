@@ -19,6 +19,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
@@ -34,6 +36,8 @@ import com.google.inject.TypeLiteral;
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
 public class Main {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
     private static final String HELP_OPTION = "h";
     private static final String LIST_MODELS_OPTION = "M";
@@ -110,8 +114,11 @@ public class Main {
             final boolean deploy = deployOnly || !configureOnly;
             final boolean configure = configureOnly || !deployOnly;
 
+            LOG.debug("Modes: deploy = {}, configure = {}", deploy, configure);
+
             final String firmware;
             final File firmwareImage;
+            final String model;
             if (deploy) {
             	firmware = getArgValue(commandLine, FIRMWARE_OPTION, "No firmware specified.", 2);
                 final String firmwareFileString = getArgValue(
@@ -131,20 +138,19 @@ public class Main {
                     System.err.println("Not a file: " + firmwareImage.getPath());
                     System.exit(5);
                 }
+                model = getArgValue(commandLine, MODEL_OPTION, "Model not set.", 6) ;
             } else {
             	firmware = null;
                 firmwareImage = null;
+                model = null;
             }
 
-            final String model;
             final String password;
             final String nodename;
             if (configure) {
-                model = getArgValue(commandLine, MODEL_OPTION, "Model not set.", 6) ;
                 password = getArgValue(commandLine, PASSWORD_OPTION, "Root password not set.", 7);
                 nodename = getArgValue(commandLine, NODENAME_OPTION, "Node name not set.", 8);
             } else {
-                model = null;
                 password = null;
                 nodename = null;
             }
