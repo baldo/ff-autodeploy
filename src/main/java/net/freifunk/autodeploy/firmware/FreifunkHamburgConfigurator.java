@@ -33,7 +33,7 @@ public class FreifunkHamburgConfigurator implements FirmwareConfigurator {
     private static final By PASSWORD_FIELD2 = By.id("cbid.password.1.pw2");
     private static final By HOSTNAME_FIELD = By.id("cbid.hostname.1.hostname");
     private static final By MESH_VIA_VPN_CHECKBOX = By.id("cbid.meshvpn.1.meshvpn");
-    private static final By VPN_KEY = By.xpath("//div[matches(text(),'^[0-9a-f]{64}$')]");
+    private static final By VPN_KEY = By.cssSelector("#maincontent div"); // pretty fragile, but works for now
     private static final By CONFIGURATION_HEADLINE = By.cssSelector("#maincontent h2");
     private static final By REBOOT_BUTTON = By.cssSelector(".btn.primary");
     private static final String CONFIGURATION_DONE_HEADLINE = "Konfiguration abgeschlossen";
@@ -61,7 +61,7 @@ public class FreifunkHamburgConfigurator implements FirmwareConfigurator {
     private void goToConfigMode() {
         _actor.switchToWindow();
         _actor.navigateTo(CONFIG_MODE_URL);
-        _actor.waitForTitleContaining("Freifunk");
+        _actor.waitForTitleContaining("LuCI");
     }
 
     private void startConfiguration() {
