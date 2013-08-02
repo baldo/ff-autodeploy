@@ -22,6 +22,7 @@ import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Ordering;
 import com.google.inject.ConfigurationException;
@@ -36,8 +37,8 @@ import com.google.inject.TypeLiteral;
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
 public class Main {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(Main.class);
+
+    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
     private static final String HELP_OPTION = "h";
     private static final String LIST_MODELS_OPTION = "M";
@@ -116,11 +117,9 @@ public class Main {
 
             LOG.debug("Modes: deploy = {}, configure = {}", deploy, configure);
 
-            final String firmware;
             final File firmwareImage;
             final String model;
             if (deploy) {
-            	firmware = getArgValue(commandLine, FIRMWARE_OPTION, "No firmware specified.", 2);
                 final String firmwareFileString = getArgValue(
                     commandLine,
                     FIRMWARE_IMAGE_OPTION,
@@ -140,26 +139,35 @@ public class Main {
                 }
                 model = getArgValue(commandLine, MODEL_OPTION, "Model not set.", 6) ;
             } else {
-            	firmware = null;
                 firmwareImage = null;
                 model = null;
             }
 
+            final String firmware;
             final String password;
             final String nodename;
             if (configure) {
+                firmware = getArgValue(commandLine, FIRMWARE_OPTION, "No firmware specified.", 2);
                 password = getArgValue(commandLine, PASSWORD_OPTION, "Root password not set.", 7);
                 nodename = getArgValue(commandLine, NODENAME_OPTION, "Node name not set.", 8);
             } else {
+                firmware = null;
                 password = null;
                 nodename = null;
             }
 
-            final DeviceDeployer deployer = getDeployer(model);
-            final FirmwareConfigurator configurator = getConfigurator(firmware);
+            final DeviceDeployer deployer = deploy ? getDeployer(model) : null;
+            final FirmwareConfigurator configurator = configure ? getConfigurator(firmware) : null;
 
-            deployer.deploy(firmwareImage);
-            configurator.configure(password, nodename);
+            if (deploy) {
+                Preconditions.checkNotNull(deployer, "Deployer is null.");
+                deployer.deploy(firmwareImage);
+            }
+
+            if (configure) {
+                Preconditions.checkNotNull(configurator, "Configurator is null.");
+                configurator.configure(password, nodename);
+            }
         } finally {
             // tear down selenium
             _injector.getInstance(WebDriver.class).close();
