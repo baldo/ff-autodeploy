@@ -8,18 +8,18 @@ import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 
 /**
- * Configures the Freifunk Hamburg firmware.
+ * Configures the Freifunk Kiel firmware.
  *
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
-public class FreifunkHamburgConfigurator extends AbstractFreifunkNordConfigurator {
+public class FreifunkKielConfigurator extends AbstractFreifunkNordConfigurator {
 
     public static final Set<Firmware> SUPPORTED_FIRMWARES = ImmutableSet.of(
-        new Firmware("ffhh", "Freifunk Hamburg")
+        new Firmware("ffki", "Freifunk Kiel")
     );
 
     @Inject
-    public FreifunkHamburgConfigurator(
+    public FreifunkKielConfigurator(
         final Actor actor
     ) {
         super(actor);

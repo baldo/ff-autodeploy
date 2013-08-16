@@ -11,6 +11,7 @@ import net.freifunk.autodeploy.device.tplink.TPLinkDeployer;
 import net.freifunk.autodeploy.firmware.Firmware;
 import net.freifunk.autodeploy.firmware.FirmwareConfigurator;
 import net.freifunk.autodeploy.firmware.FreifunkHamburgConfigurator;
+import net.freifunk.autodeploy.firmware.FreifunkKielConfigurator;
 import net.freifunk.autodeploy.selenium.Actor;
 import net.freifunk.autodeploy.selenium.ActorImpl;
 
@@ -63,6 +64,7 @@ public class AutoDeployModule extends AbstractModule {
 
         final Multibinder<Firmware> firmwareBinder = Multibinder.newSetBinder(binder(), Firmware.class);
         bindConfigurator(firmwareBinder, FreifunkHamburgConfigurator.class);
+        bindConfigurator(firmwareBinder, FreifunkKielConfigurator.class);
 
         bind(Actor.class).to(ActorImpl.class).in(SINGLETON);
     }
