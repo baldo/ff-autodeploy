@@ -18,6 +18,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ public class Main {
     private static final String FIRMWARE_OPTION = "f";
     private static final String FIRMWARE_IMAGE_OPTION = "i";
     private static final String PASSWORD_OPTION = "p";
+    private static final String GENERATE_PASSWORD_OPTION = "P";
     private static final String NODENAME_OPTION = "n";
     private static final String MODEL_OPTION = "m";
 
@@ -75,6 +77,7 @@ public class Main {
             options.addOption(new Option(FIRMWARE_OPTION, "firmware", true, "The firmware to configure."));
             options.addOption(new Option(FIRMWARE_IMAGE_OPTION, "image", true, "The firmware image."));
             options.addOption(new Option(PASSWORD_OPTION, "password", true, "The new root password for the device."));
+            options.addOption(new Option(GENERATE_PASSWORD_OPTION, "gen-password", false, "The root password for the device will be generated."));
             options.addOption(new Option(NODENAME_OPTION, "nodename", true, "The name for the node. Will also be the hostname."));
             options.addOption(new Option(MODEL_OPTION, "model", true, "The model."));
 
@@ -148,7 +151,25 @@ public class Main {
             final String nodename;
             if (configure) {
                 firmware = getArgValue(commandLine, FIRMWARE_OPTION, "No firmware specified.", 2);
-                password = getArgValue(commandLine, PASSWORD_OPTION, "Root password not set.", 7);
+
+                final boolean passwordGiven = commandLine.hasOption(PASSWORD_OPTION);
+                final boolean generatePassword = commandLine.hasOption(GENERATE_PASSWORD_OPTION);
+                if (passwordGiven && generatePassword) {
+                    System.err.println("Specifying a password and generating one at the same time is not supported.");
+                    System.exit(71);
+                }
+                if (!passwordGiven && !generatePassword) {
+                    System.err.println("Neither is a password specified nor is the --gen-password option set.");
+                    System.exit(72);
+                }
+
+                if (passwordGiven) {
+                    password = getArgValue(commandLine, PASSWORD_OPTION, "Root password not set.", 7);
+                } else {
+                    password = generatePassword();
+                    System.out.println("Generated password: " + password);
+                }
+
                 nodename = getArgValue(commandLine, NODENAME_OPTION, "Node name not set.", 8);
             } else {
                 firmware = null;
@@ -188,6 +209,10 @@ public class Main {
         }
 
         return value;
+    }
+
+    private static String generatePassword() {
+        return RandomStringUtils.randomAlphanumeric(12);
     }
 
     private void listFirmwares() {
