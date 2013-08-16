@@ -226,6 +226,9 @@ public class Main {
             output.append(firmware.getName());
             output.append(" - ");
             output.append(firmware.getDisplayName());
+            output.append(" (");
+            output.append(firmware.getFirmwareUri());
+            output.append(")");
         }
         System.out.println(output.toString());
     }

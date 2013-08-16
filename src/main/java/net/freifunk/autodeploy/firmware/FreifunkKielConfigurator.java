@@ -1,5 +1,6 @@
 package net.freifunk.autodeploy.firmware;
 
+import java.net.URI;
 import java.util.Set;
 
 import net.freifunk.autodeploy.selenium.Actor;
@@ -15,7 +16,7 @@ import com.google.inject.Inject;
 public class FreifunkKielConfigurator extends AbstractFreifunkNordConfigurator {
 
     public static final Set<Firmware> SUPPORTED_FIRMWARES = ImmutableSet.of(
-        new Firmware("ffki", "Freifunk Kiel")
+        new Firmware("ffki", "Freifunk Kiel", URI.create("http://freifunk.in-kiel.de/mitmachen.html"))
     );
 
     @Inject

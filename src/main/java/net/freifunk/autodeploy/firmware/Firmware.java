@@ -1,5 +1,7 @@
 package net.freifunk.autodeploy.firmware;
 
+import java.net.URI;
+
 import net.freifunk.autodeploy.device.Device;
 
 import com.google.common.base.Objects;
@@ -17,10 +19,12 @@ public class Firmware implements Comparable<Firmware> {
 
     private final String _name;
     private final String _displayName;
+    private final URI _firmwareUri;
 
-    public Firmware(final String name, final String displayName) {
+    public Firmware(final String name, final String displayName, final URI firmwareUri) {
         _name = name;
         _displayName = displayName;
+        _firmwareUri = firmwareUri;
     }
 
     public String getName() {
@@ -29,6 +33,10 @@ public class Firmware implements Comparable<Firmware> {
 
     public String getDisplayName() {
         return _displayName;
+    }
+
+    public URI getFirmwareUri() {
+        return _firmwareUri;
     }
 
     @Override
