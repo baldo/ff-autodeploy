@@ -27,8 +27,11 @@ public class TPLinkDeployer implements DeviceDeployer {
 
     public static final Set<Device> SUPPORTED_DEVICES = ImmutableSet.of(
         new Device("WDR3600", "v1"),
+        new Device("WR741N", "v4"),
         new Device("WR741ND", "v4"),
         new Device("WR841N", "v8"),
+        new Device("WR841ND", "v8"),
+        new Device("WR842N", "v1"),
         new Device("WR842ND", "v1")
     );
 
