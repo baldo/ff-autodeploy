@@ -3,6 +3,7 @@ package net.freifunk.autodeploy.device.tplink;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -68,13 +69,24 @@ public class TPLinkDeployer implements DeviceDeployer {
     }
 
     @Override
-    public void deploy(final File firmwareImage) {
+    public void deploy(final File firmwareImage) throws FileNotFoundException {
         LOG.info("Starting deployment: firmware = {}", firmwareImage);
+        checkFirmwareImage(firmwareImage);
         goToWebInterface();
         ensureSupportedDevice();
         openFirmwareUpgradePage();
         startFirmwareUpgrade(firmwareImage);
         waitForReboot();
+    }
+
+    private void checkFirmwareImage(final File firmwareImage) throws FileNotFoundException {
+        if (!firmwareImage.exists()) {
+            throw new FileNotFoundException("The given firmware image file does not exist: " + firmwareImage);
+        }
+
+        if (!firmwareImage.isFile()) {
+            throw new FileNotFoundException("The given firmware image file is a directory: " + firmwareImage);
+        }
     }
 
     private void goToWebInterface() {

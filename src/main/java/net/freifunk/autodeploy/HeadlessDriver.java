@@ -37,7 +37,7 @@ public class HeadlessDriver extends HtmlUnitDriver {
         }
 
         @Override
-        public Credentials getCredentials(AuthScope authscope) {
+        public Credentials getCredentials(final AuthScope authscope) {
             return _username == null || _password == null ? null : new UsernamePasswordCredentials(_username, _password);
         }
 

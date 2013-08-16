@@ -43,7 +43,7 @@ dependencies {
     compile \
         'org.seleniumhq.selenium:selenium-support:2.33.0',
         'org.seleniumhq.selenium:selenium-htmlunit-driver:2.33.0',
-        'org.seleniumhq.selenium:selenium-firefox-driver:2.33.0',
+//        'org.seleniumhq.selenium:selenium-firefox-driver:2.33.0',
         'com.google.guava:guava:14.0.1',
         'com.google.inject:guice:3.0',
         'com.google.inject.extensions:guice-multibindings:3.0',
@@ -52,7 +52,7 @@ dependencies {
 }
 
 // creating the standalone jar
-mainClassName = 'net.freifunk.autodeploy.Main'
+mainClassName = 'net.freifunk.autodeploy.ui.commandline.CommandLineMain'
 
 tasks.jar {
     description = 'Creates JAR containing all dependencies.'

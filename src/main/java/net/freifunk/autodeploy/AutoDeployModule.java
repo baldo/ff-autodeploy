@@ -1,15 +1,18 @@
 package net.freifunk.autodeploy;
 
 import static com.google.inject.Scopes.SINGLETON;
-import static com.google.inject.name.Names.named;
 
 import java.util.Set;
 
 import net.freifunk.autodeploy.device.Device;
 import net.freifunk.autodeploy.device.DeviceDeployer;
+import net.freifunk.autodeploy.device.DeviceService;
+import net.freifunk.autodeploy.device.DeviceServiceImpl;
 import net.freifunk.autodeploy.device.tplink.TPLinkDeployer;
 import net.freifunk.autodeploy.firmware.Firmware;
 import net.freifunk.autodeploy.firmware.FirmwareConfigurator;
+import net.freifunk.autodeploy.firmware.FirmwareService;
+import net.freifunk.autodeploy.firmware.FirmwareServiceImpl;
 import net.freifunk.autodeploy.firmware.FreifunkHamburgConfigurator;
 import net.freifunk.autodeploy.firmware.FreifunkKielConfigurator;
 import net.freifunk.autodeploy.selenium.Actor;
@@ -23,7 +26,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.multibindings.Multibinder;
+import com.google.inject.multibindings.MapBinder;
 
 /**
  * Main {@link Module} for binding everything together.
@@ -33,12 +36,11 @@ import com.google.inject.multibindings.Multibinder;
 public class AutoDeployModule extends AbstractModule {
 
     @SuppressWarnings("unchecked")
-    private void bindDeployer(final Multibinder<Device> deviceBinder, final Class<? extends DeviceDeployer> cls) {
+    private void bindDeployer(final Class<? extends DeviceDeployer> cls) {
+        final MapBinder<Device, DeviceDeployer> deployerBinder = MapBinder.newMapBinder(binder(), Device.class, DeviceDeployer.class);
         try {
-
             for (final Device device: (Set<Device>) cls.getField("SUPPORTED_DEVICES").get(null)) {
-                deviceBinder.addBinding().toInstance(device);
-                bind(DeviceDeployer.class).annotatedWith(named(device.asString())).to(cls).in(SINGLETON);
+                deployerBinder.addBinding(device).to(cls).in(SINGLETON);
             }
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             throw new IllegalStateException("Could not bind deployer: " + cls, e);
@@ -46,11 +48,11 @@ public class AutoDeployModule extends AbstractModule {
     }
 
     @SuppressWarnings("unchecked")
-    private void bindConfigurator(final Multibinder<Firmware> firmwareBinder, final Class<? extends FirmwareConfigurator> cls) {
+    private void bindConfigurator(final Class<? extends FirmwareConfigurator> cls) {
+        final MapBinder<Firmware, FirmwareConfigurator> configuratorBinder = MapBinder.newMapBinder(binder(), Firmware.class, FirmwareConfigurator.class);
         try {
             for (final Firmware firmware: (Set<Firmware>) cls.getField("SUPPORTED_FIRMWARES").get(null)) {
-                firmwareBinder.addBinding().toInstance(firmware);
-                bind(FirmwareConfigurator.class).annotatedWith(named(firmware.getName())).to(cls).in(SINGLETON);
+                configuratorBinder.addBinding(firmware).to(cls).in(SINGLETON);
             }
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             throw new IllegalStateException("Could not bind configurator: " + cls, e);
@@ -59,14 +61,14 @@ public class AutoDeployModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        final Multibinder<Device> deviceBinder = Multibinder.newSetBinder(binder(), Device.class);
-        bindDeployer(deviceBinder, TPLinkDeployer.class);
+        bindDeployer(TPLinkDeployer.class);
 
-        final Multibinder<Firmware> firmwareBinder = Multibinder.newSetBinder(binder(), Firmware.class);
-        bindConfigurator(firmwareBinder, FreifunkHamburgConfigurator.class);
-        bindConfigurator(firmwareBinder, FreifunkKielConfigurator.class);
+        bindConfigurator(FreifunkHamburgConfigurator.class);
+        bindConfigurator(FreifunkKielConfigurator.class);
 
         bind(Actor.class).to(ActorImpl.class).in(SINGLETON);
+        bind(DeviceService.class).to(DeviceServiceImpl.class).in(SINGLETON);
+        bind(FirmwareService.class).to(FirmwareServiceImpl.class).in(SINGLETON);
     }
 
     @Provides
