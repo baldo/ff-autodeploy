@@ -1,13 +1,26 @@
 // plugins
 apply plugin: 'application'
+apply plugin: 'checkstyle'
 apply plugin: 'eclipse'
 apply plugin: 'java'
 
 // general settings
+version = '0.0'
+
+// java settings
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-version = '0.0'
+compileJava {
+    [
+        '-Xlint:unchecked',
+        '-Xlint:finally',
+        '-Xlint:fallthrough',
+        '-Werror'
+    ].each { option ->
+        options.compilerArgs
+    }
+}
 
 // gradle wrapper
 task wrapper(type: Wrapper) {

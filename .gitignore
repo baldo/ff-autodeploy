@@ -5,5 +5,6 @@ build-eclipse/
 
 .classpath
 .project
+.checkstyle
 
 *.swp
