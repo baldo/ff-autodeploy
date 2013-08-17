@@ -1,0 +1,43 @@
+description = 'Raspberry Pi based interface for Freifunk Auto Deployer'
+
+apply plugin: 'application'
+
+dependencies {
+    compile \
+        project(':core'),
+        'com.pi4j:pi4j-core:0.0.5'
+}
+
+// creating the standalone jar
+mainClassName = 'net.freifunk.autodeploy.ui.pi.RaspberryPiMain'
+
+tasks.jar {
+    description = 'Creates JAR containing all dependencies.'
+
+    from files(sourceSets.main.output.classesDir)
+    from configurations.runtime.asFileTree.files.collect { file ->
+        if (file.name =~ /\.so$/) {
+            file
+        } else {
+            zipTree(file)
+        }
+    }
+
+    manifest.mainAttributes(
+        'Main-Class': mainClassName,
+        'Implementation-Title': 'Freifunk Auto Deployer (Raspberry Pi interface)',
+        'Implementation-Version': version,
+        'Built-By': 'Andreas Baldeau <andreas@baldeau.net>',
+        'Built-Date': new Date(),
+        'Built-JDK': System.getProperty('java.version'),
+        'Built-Gradle': gradle.gradleVersion
+    )
+}
+
+// allow passing commandline arguments to the task run
+tasks.run {
+    if (project.hasProperty('deployArgs')) {
+        args deployArgs
+    }
+}
+
