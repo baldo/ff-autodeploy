@@ -1,9 +1,9 @@
 package net.freifunk.autodeploy.ui.pi;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import net.freifunk.autodeploy.ui.pi.peripherial.LCDDriver;
-
-import org.apache.commons.lang3.RandomStringUtils;
+import net.freifunk.autodeploy.ui.pi.peripherals.ButtonDriver;
+import net.freifunk.autodeploy.ui.pi.peripherals.ButtonListener;
+import net.freifunk.autodeploy.ui.pi.peripherals.LCDDriver;
 
 import com.google.inject.Guice;
 import com.google.inject.Inject;
@@ -15,6 +15,7 @@ import com.google.inject.Inject;
  */
 public class RaspberryPiMain {
 
+    @Inject private ButtonDriver _buttonDriver;
     @Inject private LCDDriver _lcdDriver;
 
     public RaspberryPiMain() {
@@ -27,18 +28,35 @@ public class RaspberryPiMain {
 
     private void run(final String[] args) {
         try {
+            _buttonDriver.init();
             _lcdDriver.init();
-            for (int i = 0; i <= 120; i ++) {
-                _lcdDriver.writeString("0123456789abcdef" + RandomStringUtils.randomAlphanumeric(16));
-                try {
-                    SECONDS.sleep(1);
-                } catch (final InterruptedException e) {
-                    throw new IllegalStateException("Interrupted.", e);
+
+            _buttonDriver.listen(new ButtonListener() {
+
+                @Override
+                public void pressed() {
+                    _lcdDriver.writeString("Pressed...");
                 }
+
+                @Override
+                public void released() {
+                    _lcdDriver.writeString("Released...");
+                }
+            });
+
+            try {
+                SECONDS.sleep(60);
+            } catch (final InterruptedException e) {
+                throw new IllegalStateException("Interrupted.", e);
             }
         }
         finally {
-            _lcdDriver.shutdown();
+            try {
+                _buttonDriver.shutdown();
+            }
+            finally {
+                _lcdDriver.shutdown();
+            }
         }
     }
 }

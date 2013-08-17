@@ -1,4 +1,4 @@
-package net.freifunk.autodeploy.ui.pi.peripherial;
+package net.freifunk.autodeploy.ui.pi.peripherals;
 
 /**
  * Driver to display information on an attached LCD.
