@@ -1,25 +1,6 @@
-// plugins
-apply plugin: 'application'
-apply plugin: 'checkstyle'
-apply plugin: 'eclipse'
-apply plugin: 'java'
-
 // general settings
-version = '0.0'
-
-// java settings
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
-compileJava {
-    [
-        '-Xlint:unchecked',
-        '-Xlint:finally',
-        '-Xlint:fallthrough',
-        '-Werror'
-    ].each { option ->
-        options.compilerArgs
-    }
+allprojects {
+    version = '0.0'
 }
 
 // gradle wrapper
@@ -27,53 +8,42 @@ task wrapper(type: Wrapper) {
     gradleVersion = '1.7'
 }
 
+// java settings
+subprojects {
+    apply plugin: 'checkstyle'
+    apply plugin: 'java'
+
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+
+    repositories {
+        mavenCentral()
+    }
+
+    compileJava {
+        [
+            '-Xlint:unchecked',
+            '-Xlint:finally',
+            '-Xlint:fallthrough',
+            '-Werror'
+        ].each { option ->
+            options.compilerArgs
+        }
+    }
+
+    checkstyle {
+        configFile file("${project.rootDir}/config/checkstyle/checkstyle.xml")
+    }
+}
+
 // eclipse
-eclipse {
-    classpath {
-        defaultOutputDir = file "${project.projectDir}/build-eclipse"
+allprojects {
+    apply plugin: 'eclipse'
+
+    eclipse {
+        classpath {
+            defaultOutputDir = file "${project.projectDir}/build-eclipse"
+        }
     }
 }
 
-// dependencies
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    compile \
-        'org.seleniumhq.selenium:selenium-support:2.33.0',
-        'org.seleniumhq.selenium:selenium-htmlunit-driver:2.33.0',
-//        'org.seleniumhq.selenium:selenium-firefox-driver:2.33.0',
-        'com.google.guava:guava:14.0.1',
-        'com.google.inject:guice:3.0',
-        'com.google.inject.extensions:guice-multibindings:3.0',
-        'commons-cli:commons-cli:1.2',
-        'ch.qos.logback:logback-classic:1.0.13'
-}
-
-// creating the standalone jar
-mainClassName = 'net.freifunk.autodeploy.ui.commandline.CommandLineMain'
-
-tasks.jar {
-    description = 'Creates JAR containing all dependencies.'
-
-    from files(sourceSets.main.output.classesDir)
-    from configurations.runtime.asFileTree.files.collect { zipTree(it) }
-
-    manifest.mainAttributes(
-        'Main-Class': mainClassName,
-        'Implementation-Title': 'Freifunk Auto Deployer',
-        'Implementation-Version': version,
-        'Built-By': 'Andreas Baldeau <andreas@baldeau.net>',
-        'Built-Date': new Date(),
-        'Built-JDK': System.getProperty('java.version'),
-        'Built-Gradle': gradle.gradleVersion
-    )
-}
-
-// allow passing commandline arguments to the task run
-tasks.run {
-    if (project.hasProperty('deployArgs')){
-        args deployArgs
-    }
-}

@@ -1,0 +1,37 @@
+description = 'Commandline UI for Freifunk Auto Deployer'
+
+apply plugin: 'application'
+
+dependencies {
+    compile \
+        project(':core'),
+        'commons-cli:commons-cli:1.2'
+}
+
+// creating the standalone jar
+mainClassName = 'net.freifunk.autodeploy.ui.commandline.CommandLineMain'
+
+tasks.jar {
+    description = 'Creates JAR containing all dependencies.'
+
+    from files(sourceSets.main.output.classesDir)
+    from configurations.runtime.asFileTree.files.collect { zipTree(it) }
+
+    manifest.mainAttributes(
+        'Main-Class': mainClassName,
+        'Implementation-Title': 'Freifunk Auto Deployer',
+        'Implementation-Version': version,
+        'Built-By': 'Andreas Baldeau <andreas@baldeau.net>',
+        'Built-Date': new Date(),
+        'Built-JDK': System.getProperty('java.version'),
+        'Built-Gradle': gradle.gradleVersion
+    )
+}
+
+// allow passing commandline arguments to the task run
+tasks.run {
+    if (project.hasProperty('deployArgs')) {
+        args deployArgs
+    }
+}
+
