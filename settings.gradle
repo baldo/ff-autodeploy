@@ -1,4 +1,7 @@
 include 'core'
 include 'ui-commandline'
-include 'ui-raspberry-pi'
+
+if (System.properties['ui.raspberryPi.enable'] == "true") {
+    include 'ui-raspberry-pi'
+}
 
