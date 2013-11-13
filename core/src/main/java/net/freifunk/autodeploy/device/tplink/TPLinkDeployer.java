@@ -123,10 +123,18 @@ public class TPLinkDeployer implements DeviceDeployer {
         _actor.selectFrame(MAIN_FRAME_NAME);
         _actor.chooseFile(FIRMWARE_FILE_CHOOSER, firmwareImage);
 
-        // disable checking of firmware as this is not very reliable and requires unnecessarily complicated handling
-        _actor.executeJavascript("doSubmit = function () { return true; }");
+        if (_actor.usesHtmlUnitDriver()) {
+            // TODO: Custom firmware check?
+            // disable checking of firmware as this is not very reliable and requires unnecessarily complicated handling
+            _actor.executeJavascript("doSubmit = function () { return true; }");
+        }
 
         _actor.clickElement(FIRMWARE_UPGRADE_BUTTON);
+
+        if (!_actor.usesHtmlUnitDriver()) {
+            // for the HtmlUnitDriver the check is disabled above and thus no prompt will occur.
+            _actor.confirmPrompt();
+        }
     }
 
     private void waitForReboot() {

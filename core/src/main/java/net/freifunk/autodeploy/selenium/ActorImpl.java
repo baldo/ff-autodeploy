@@ -1,5 +1,6 @@
 package net.freifunk.autodeploy.selenium;
 
+import static org.openqa.selenium.support.ui.ExpectedConditions.alertIsPresent;
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementSelectionStateToBe;
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;
 import static org.openqa.selenium.support.ui.ExpectedConditions.frameToBeAvailableAndSwitchToIt;
@@ -10,10 +11,12 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.titleContains;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +46,11 @@ public class ActorImpl implements Actor {
         _wait = wait;
 
         _window = _webDriver.getWindowHandle();
+    }
+
+    @Override
+    public boolean usesHtmlUnitDriver() {
+        return _webDriver instanceof HtmlUnitDriver;
     }
 
     @Override
@@ -194,5 +202,20 @@ public class ActorImpl implements Actor {
         LOG.debug("waitForElementContainingText: {}, {}, {}, {}", by, text, timeout, unit);
         _wait.withTimeout(timeout, unit).until(textToBePresentInElement(by, text));
         LOG.debug("waitForElementContainingText done: {}, {}, {}, {}", by, text, timeout, unit);
+    }
+
+    @Override
+    public void confirmPrompt() {
+        LOG.debug("confirmPrompt");
+        waitForAlert();
+        final Alert prompt = _webDriver.switchTo().alert();
+        prompt.accept();
+        LOG.debug("confirmPrompt done");
+    }
+
+    private void waitForAlert() {
+        LOG.debug("waitForAlert");
+        _wait.until(alertIsPresent());
+        LOG.debug("waitForAlert done");
     }
 }

@@ -21,6 +21,8 @@ import net.freifunk.autodeploy.selenium.ActorImpl;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
@@ -34,6 +36,8 @@ import com.google.inject.multibindings.MapBinder;
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
 public class AutoDeployModule extends AbstractModule {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AutoDeployModule.class);
 
     @SuppressWarnings("unchecked")
     private void bindDeployer(final Class<? extends DeviceDeployer> cls) {
@@ -74,9 +78,24 @@ public class AutoDeployModule extends AbstractModule {
     @Provides
     @Singleton
     private WebDriver provideWebDriver() {
-        final HtmlUnitDriver webDriver = new HeadlessDriver();
-//        final FirefoxDriver webDriver = new FirefoxDriver();
-        return webDriver;
+        if ("true".equals(System.getProperty("webdriver.firefox.enable"))) {
+            LOG.info("Using FirefoxDriver.");
+            try {
+                final ClassLoader classLoader = this.getClass().getClassLoader();
+                @SuppressWarnings("unchecked")
+                final Class<? extends WebDriver> firefoxDriverClass = (Class<? extends WebDriver>) classLoader.loadClass(
+                    "org.openqa.selenium.firefox.FirefoxDriver"
+                );
+                final WebDriver firefoxDriver = firefoxDriverClass.newInstance();
+                return firefoxDriver;
+            } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                throw new IllegalStateException("Trying to instantiate FirefoxDriver failed. Did you compile with -Dwebdriver.firefox.allow=true?", e);
+            }
+        } else {
+            LOG.info("Using HtmlUnitDriver.");
+            final HtmlUnitDriver htmlUnitDriver = new HeadlessDriver();
+            return htmlUnitDriver;
+        }
     }
 
     @Provides

@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 /**
  * Abstraction layer around Selenium.
@@ -12,6 +13,11 @@ import org.openqa.selenium.WebElement;
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
 public interface Actor {
+
+    /**
+     * Use this to determine if the {@link HtmlUnitDriver} is used.
+     */
+    boolean usesHtmlUnitDriver();
 
     /**
      * All subsequent operations will be performed on the window.
@@ -93,4 +99,9 @@ public interface Actor {
      * Waits until the element specified by the selector contains the given text. Fails after the given timeout.
      */
     void waitForElementContainingText(By by, String text, int timeout, TimeUnit unit);
+
+    /**
+     * Confirms a prompt.
+     */
+    void confirmPrompt();
 }
