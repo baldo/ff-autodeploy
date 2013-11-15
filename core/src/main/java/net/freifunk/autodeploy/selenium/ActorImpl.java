@@ -9,6 +9,9 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.textToBePresentI
 import static org.openqa.selenium.support.ui.ExpectedConditions.titleContains;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.Alert;
@@ -22,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.inject.Inject;
 
 /**
@@ -30,6 +34,31 @@ import com.google.inject.Inject;
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
 public class ActorImpl implements Actor {
+
+    private static final class IsWebserverAvailable implements Predicate<WebDriver> {
+        private final int _port;
+        private final String _host;
+
+        private IsWebserverAvailable(final int port, final String host) {
+            _port = port;
+            _host = host;
+        }
+
+        @Override
+        public boolean apply(final WebDriver input) {
+            LOG.debug("IsWebserverAvailable: {}, {}", _host, _port);
+
+            try (final Socket socket = new Socket()) {
+                socket.connect(new InetSocketAddress(_host, _port), 2000 /* 2 seconds */);
+                final boolean connected = socket.isConnected();
+                LOG.debug("IsWebserverAvailable done: {}, {} => {}", _host, _port, connected);
+                return connected;
+            } catch (final IOException e) {
+                LOG.debug("IsWebserverAvailable done: {}, {} => false ({})", _host, _port, e.getClass().getSimpleName());
+                return false;
+            }
+        }
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(ActorImpl.class);
 
@@ -51,6 +80,13 @@ public class ActorImpl implements Actor {
     @Override
     public boolean usesHtmlUnitDriver() {
         return _webDriver instanceof HtmlUnitDriver;
+    }
+
+    @Override
+    public void waitForWebserverBeingAvailable(final String host, final int port, final int timeout, final TimeUnit unit) {
+        LOG.debug("waitForWebserverBeingAvailable: {}, {}, {}, {}", host, port, timeout, unit);
+        _wait.withTimeout(timeout, unit).until(new IsWebserverAvailable(port, host));
+        LOG.debug("waitForWebserverBeingAvailable done: {}, {}, {}, {}", host, port, timeout, unit);
     }
 
     @Override

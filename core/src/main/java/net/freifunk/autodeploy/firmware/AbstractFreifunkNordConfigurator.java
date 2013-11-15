@@ -1,5 +1,6 @@
 package net.freifunk.autodeploy.firmware;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import net.freifunk.autodeploy.selenium.Actor;
 
 import org.openqa.selenium.By;
@@ -16,7 +17,10 @@ public abstract class AbstractFreifunkNordConfigurator implements FirmwareConfig
     private static final Logger LOG = LoggerFactory.getLogger(AbstractFreifunkNordConfigurator.class);
 
     // config mode
-    private static final String CONFIG_MODE_URL = "http://192.168.1.1";
+    private static final String CONFIG_MODE_IP = "192.168.1.1";
+    private static final int CONFIG_MODE_PORT = 80;
+    private static final String CONFIG_MODE_URL = "http://" + CONFIG_MODE_IP + ":" + CONFIG_MODE_PORT;
+    private static final String CONFIG_MODE_TITLE = "LuCI";
 
     private static final By START_CONFIGURATION_LINK = By.cssSelector(".actions .btn.primary");
     private static final By NEXT_BUTTON = By.cssSelector(".actions .btn.primary");
@@ -39,6 +43,7 @@ public abstract class AbstractFreifunkNordConfigurator implements FirmwareConfig
 
     @Override
     public void configure(final String password, final String nodename) {
+        _actor.waitForWebserverBeingAvailable(CONFIG_MODE_IP, CONFIG_MODE_PORT, 180, SECONDS);
         goToConfigMode();
         startConfiguration();
         setPassword(password);
@@ -51,7 +56,7 @@ public abstract class AbstractFreifunkNordConfigurator implements FirmwareConfig
     private void goToConfigMode() {
         _actor.switchToWindow();
         _actor.navigateTo(CONFIG_MODE_URL);
-        _actor.waitForTitleContaining("LuCI");
+        _actor.waitForTitleContaining(CONFIG_MODE_TITLE);
     }
 
     private void startConfiguration() {

@@ -20,6 +20,11 @@ public interface Actor {
     boolean usesHtmlUnitDriver();
 
     /**
+     * Waits for the webserver to be available.
+     */
+    void waitForWebserverBeingAvailable(String host, int port, int timeout, TimeUnit unit);
+
+    /**
      * All subsequent operations will be performed on the window.
      */
     void switchToWindow();

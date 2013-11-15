@@ -1,6 +1,6 @@
 package net.freifunk.autodeploy.device.tplink;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,11 +39,12 @@ public class TPLinkDeployer implements DeviceDeployer {
     private static final Logger LOG = LoggerFactory.getLogger(TPLinkDeployer.class);
 
     private static final String TP_LINK_WEB_INTERFACE_IP = "192.168.0.1";
+    private static final int TP_LINK_WEB_INTERFACE_PORT = 80;
     private static final String TP_LINK_WEB_INTERFACE_USER = "admin";
     private static final String TP_LINK_WEB_INTERFACE_PASSWORD = "admin";
 
     private static final String TP_LINK_WEB_INTERFACE_URL =
-        "http://" + TP_LINK_WEB_INTERFACE_USER + ":" + TP_LINK_WEB_INTERFACE_PASSWORD + "@" + TP_LINK_WEB_INTERFACE_IP;
+        "http://" + TP_LINK_WEB_INTERFACE_USER + ":" + TP_LINK_WEB_INTERFACE_PASSWORD + "@" + TP_LINK_WEB_INTERFACE_IP + ":" + TP_LINK_WEB_INTERFACE_PORT;
 
     // menu
     private static final String MENU_FRAME_NAME = "bottomLeftFrame";
@@ -71,12 +72,12 @@ public class TPLinkDeployer implements DeviceDeployer {
     @Override
     public void deploy(final File firmwareImage) throws FileNotFoundException {
         LOG.info("Starting deployment: firmware = {}", firmwareImage);
+        _actor.waitForWebserverBeingAvailable(TP_LINK_WEB_INTERFACE_IP, TP_LINK_WEB_INTERFACE_PORT, 60, SECONDS);
         checkFirmwareImage(firmwareImage);
         goToWebInterface();
         ensureSupportedDevice();
         openFirmwareUpgradePage();
         startFirmwareUpgrade(firmwareImage);
-        waitForReboot();
     }
 
     private void checkFirmwareImage(final File firmwareImage) throws FileNotFoundException {
@@ -134,16 +135,6 @@ public class TPLinkDeployer implements DeviceDeployer {
         if (!_actor.usesHtmlUnitDriver()) {
             // for the HtmlUnitDriver the check is disabled above and thus no prompt will occur.
             _actor.confirmPrompt();
-        }
-    }
-
-    private void waitForReboot() {
-        _actor.selectFrame(MAIN_FRAME_NAME);
-        _actor.waitForElementContainingText(By.cssSelector("#t_title"), "Restart", 10, MINUTES);
-        try {
-            Thread.sleep(20000 /* 20 seconds */);
-        } catch (final InterruptedException e) {
-            throw new IllegalStateException("Got interrupted while waiting for reboot.", e);
         }
     }
 }
