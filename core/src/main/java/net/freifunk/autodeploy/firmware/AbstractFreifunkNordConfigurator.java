@@ -43,6 +43,7 @@ public abstract class AbstractFreifunkNordConfigurator implements FirmwareConfig
 
     @Override
     public void configure(final String password, final String nodename) {
+        LOG.debug("Starting firmware configuration.");
         _actor.waitForWebserverBeingAvailable(CONFIG_MODE_IP, CONFIG_MODE_PORT, 180, SECONDS);
         goToConfigMode();
         startConfiguration();
@@ -64,17 +65,20 @@ public abstract class AbstractFreifunkNordConfigurator implements FirmwareConfig
     }
 
     private void setPassword(final String password) {
+        LOG.debug("Setting password.");
         _actor.typeIntoPasswordInput(PASSWORD_FIELD1, password);
         _actor.typeIntoPasswordInput(PASSWORD_FIELD2, password);
         _actor.clickElement(NEXT_BUTTON);
     }
 
     private void setHostName(final String hostname) {
+        LOG.debug("Setting hostname.");
         _actor.typeIntoTextInput(HOSTNAME_FIELD, hostname);
         _actor.clickElement(NEXT_BUTTON);
     }
 
     private void activateVPN() {
+        LOG.debug("Activating VPN meshing.");
         _actor.updateCheckbox(MESH_VIA_VPN_CHECKBOX, true);
         // TODO: Allow setting bandwidth limit.
         _actor.clickElement(NEXT_BUTTON);
@@ -91,6 +95,7 @@ public abstract class AbstractFreifunkNordConfigurator implements FirmwareConfig
     }
 
     private void bootIntoRegularMode() {
+        LOG.debug("Configuration done. Booting into regular mode.");
         _actor.waitForElementContainingText(CONFIGURATION_HEADLINE, CONFIGURATION_DONE_HEADLINE);
         _actor.clickElement(REBOOT_BUTTON);
     }

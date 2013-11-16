@@ -78,8 +78,9 @@ public class AutoDeployModule extends AbstractModule {
     @Provides
     @Singleton
     private WebDriver provideWebDriver() {
+        final WebDriver webDriver;
+
         if ("true".equals(System.getProperty("webdriver.firefox.enable"))) {
-            LOG.info("Using FirefoxDriver.");
             try {
                 final ClassLoader classLoader = this.getClass().getClassLoader();
                 @SuppressWarnings("unchecked")
@@ -87,15 +88,17 @@ public class AutoDeployModule extends AbstractModule {
                     "org.openqa.selenium.firefox.FirefoxDriver"
                 );
                 final WebDriver firefoxDriver = firefoxDriverClass.newInstance();
-                return firefoxDriver;
+                webDriver = firefoxDriver;
             } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 throw new IllegalStateException("Trying to instantiate FirefoxDriver failed. Did you compile with -Dwebdriver.firefox.allow=true?", e);
             }
         } else {
-            LOG.info("Using HtmlUnitDriver.");
             final HtmlUnitDriver htmlUnitDriver = new HeadlessDriver();
-            return htmlUnitDriver;
+            webDriver = htmlUnitDriver;
         }
+
+        LOG.debug("WebDriver being used: " + webDriver.getClass().getSimpleName());
+        return webDriver;
     }
 
     @Provides

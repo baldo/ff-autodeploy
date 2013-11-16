@@ -46,15 +46,15 @@ public class ActorImpl implements Actor {
 
         @Override
         public boolean apply(final WebDriver input) {
-            LOG.debug("IsWebserverAvailable: {}, {}", _host, _port);
+            LOG.trace("IsWebserverAvailable: {}, {}", _host, _port);
 
             try (final Socket socket = new Socket()) {
                 socket.connect(new InetSocketAddress(_host, _port), 2000 /* 2 seconds */);
                 final boolean connected = socket.isConnected();
-                LOG.debug("IsWebserverAvailable done: {}, {} => {}", _host, _port, connected);
+                LOG.trace("IsWebserverAvailable done: {}, {} => {}", _host, _port, connected);
                 return connected;
             } catch (final IOException e) {
-                LOG.debug("IsWebserverAvailable done: {}, {} => false ({})", _host, _port, e.getClass().getSimpleName());
+                LOG.trace("IsWebserverAvailable done: {}, {} => false ({})", _host, _port, e.getClass().getSimpleName());
                 return false;
             }
         }
@@ -84,85 +84,85 @@ public class ActorImpl implements Actor {
 
     @Override
     public void waitForWebserverBeingAvailable(final String host, final int port, final int timeout, final TimeUnit unit) {
-        LOG.debug("waitForWebserverBeingAvailable: {}, {}, {}, {}", host, port, timeout, unit);
+        LOG.trace("waitForWebserverBeingAvailable: {}, {}, {}, {}", host, port, timeout, unit);
         _wait.withTimeout(timeout, unit).until(new IsWebserverAvailable(port, host));
-        LOG.debug("waitForWebserverBeingAvailable done: {}, {}, {}, {}", host, port, timeout, unit);
+        LOG.trace("waitForWebserverBeingAvailable done: {}, {}, {}, {}", host, port, timeout, unit);
     }
 
     @Override
     public void switchToWindow() {
-        LOG.debug("switchToWindow: {}", _window);
+        LOG.trace("switchToWindow: {}", _window);
         _webDriver.switchTo().window(_window);
-        LOG.debug("switchToWindow done: {}", _window);
+        LOG.trace("switchToWindow done: {}", _window);
     }
 
     @Override
     public void navigateTo(final String url) {
-        LOG.debug("navigateTo: {}", url);
+        LOG.trace("navigateTo: {}", url);
         switchToWindow();
         _webDriver.navigate().to(url);
-        LOG.debug("navigateTo done: {}", url);
+        LOG.trace("navigateTo done: {}", url);
     }
 
     @Override
     public void selectFrame(final String frameName) {
-        LOG.debug("selectFrame: {}", frameName);
+        LOG.trace("selectFrame: {}", frameName);
         switchToWindow();
         _wait.until(frameToBeAvailableAndSwitchToIt(frameName));
-        LOG.debug("selectFrame done: {}", frameName);
+        LOG.trace("selectFrame done: {}", frameName);
     }
 
     @Override
     public void waitForElement(final By by) {
-        LOG.debug("waitForElement: {}", by);
+        LOG.trace("waitForElement: {}", by);
         _wait.until(presenceOfElementLocated(by));
-        LOG.debug("waitForElement done: {}", by);
+        LOG.trace("waitForElement done: {}", by);
     }
 
     @Override
     public void waitForClickableElement(final By by) {
-        LOG.debug("waitForClickableElement: {}", by);
+        LOG.trace("waitForClickableElement: {}", by);
         _wait.until(elementToBeClickable(by));
-        LOG.debug("waitForClickableElement done: {}", by);
+        LOG.trace("waitForClickableElement done: {}", by);
     }
 
     @Override
     public void waitForTitleContaining(final String substring) {
-        LOG.debug("waitForTitleContaining: {}", substring);
+        LOG.trace("waitForTitleContaining: {}", substring);
         _wait.until(titleContains(substring));
-        LOG.debug("waitForTitleContaining done: {}", substring);
+        LOG.trace("waitForTitleContaining done: {}", substring);
     }
 
     @Override
     public WebElement getElement(final By by) {
-        LOG.debug("getElement: {}", by);
+        LOG.trace("getElement: {}", by);
         waitForElement(by);
         final WebElement element = _webDriver.findElement(by);
-        LOG.debug("getElement done: {}", by);
+        LOG.trace("getElement done: {}", by);
         return element;
     }
 
     @Override
     public String getTextOfElement(final By by) {
-        LOG.debug("getTextOfElement: {}", by);
+        LOG.trace("getTextOfElement: {}", by);
         final WebElement element = getElement(by);
         final String text = element.getText();
-        LOG.debug("getTextOfElement done: {} => {}", by, text);
+        LOG.trace("getTextOfElement done: {} => {}", by, text);
         return text;
     }
 
     @Override
     public void clickElement(final By by) {
-        LOG.debug("clickElement: {}", by);
+        LOG.trace("clickElement: {}", by);
         waitForClickableElement(by);
         final WebElement element = getElement(by);
         element.click();
-        LOG.debug("clickElement done: {}", by);
+        LOG.trace("clickElement done: {}", by);
     }
 
     @Override
     public void chooseFile(final By by, final File file) {
-        LOG.debug("chooseFile: {}, {}", by, file);
+        LOG.trace("chooseFile: {}, {}", by, file);
         final WebElement element = getElement(by);
         Preconditions.checkState(
             "input".equals(element.getTagName()) && "file".equals(element.getAttribute("type")),
@@ -170,12 +170,12 @@ public class ActorImpl implements Actor {
             element
         );
         element.sendKeys(file.getAbsoluteFile().getPath());
-        LOG.debug("chooseFile done: {}, {}", by, file);
+        LOG.trace("chooseFile done: {}, {}", by, file);
     }
 
     @Override
     public void typeIntoTextInput(final By by, final String text) {
-        LOG.debug("typeIntoTextInput: {}, {}", by, text);
+        LOG.trace("typeIntoTextInput: {}, {}", by, text);
         final WebElement element = getElement(by);
         element.clear();
         Preconditions.checkState(
@@ -184,12 +184,12 @@ public class ActorImpl implements Actor {
             element
         );
         element.sendKeys(text);
-        LOG.debug("typeIntoTextInput done: {}, {}", by, text);
+        LOG.trace("typeIntoTextInput done: {}, {}", by, text);
     }
 
     @Override
     public void typeIntoPasswordInput(final By by, final String password) {
-        LOG.debug("typeIntoPasswordInput: {}, ********", by);
+        LOG.trace("typeIntoPasswordInput: {}, ********", by);
         final WebElement element = getElement(by);
         element.clear();
         Preconditions.checkState(
@@ -198,12 +198,12 @@ public class ActorImpl implements Actor {
             element
         );
         element.sendKeys(password);
-        LOG.debug("typeIntoPasswordInput done: {}, ********", by);
+        LOG.trace("typeIntoPasswordInput done: {}, ********", by);
     }
 
     @Override
     public void updateCheckbox(final By by, final boolean checked) {
-        LOG.debug("updateCheckbox: {}, {}", by, checked);
+        LOG.trace("updateCheckbox: {}, {}", by, checked);
         waitForClickableElement(by);
         final WebElement checkbox = getElement(by);
         Preconditions.checkState(
@@ -215,43 +215,43 @@ public class ActorImpl implements Actor {
             checkbox.click();
         }
         _wait.until(elementSelectionStateToBe(by, checked));
-        LOG.debug("updateCheckbox done: {}, {}", by, checked);
+        LOG.trace("updateCheckbox done: {}, {}", by, checked);
     }
 
     @Override
     public void executeJavascript(final String js) {
-        LOG.debug("executeJavascript: {}", js);
+        LOG.trace("executeJavascript: {}", js);
         final JavascriptExecutor javascriptExecutor = (JavascriptExecutor) _webDriver;
         javascriptExecutor.executeScript(js);
-        LOG.debug("executeJavascript done: {}", js);
+        LOG.trace("executeJavascript done: {}", js);
     }
 
     @Override
     public void waitForElementContainingText(final By by, final String text) {
-        LOG.debug("waitForElementContainingText: {}, {}", by, text);
+        LOG.trace("waitForElementContainingText: {}, {}", by, text);
         _wait.until(textToBePresentInElement(by, text));
-        LOG.debug("waitForElementContainingText done: {}, {}", by, text);
+        LOG.trace("waitForElementContainingText done: {}, {}", by, text);
     }
 
     @Override
     public void waitForElementContainingText(final By by, final String text, final int timeout, final TimeUnit unit) {
-        LOG.debug("waitForElementContainingText: {}, {}, {}, {}", by, text, timeout, unit);
+        LOG.trace("waitForElementContainingText: {}, {}, {}, {}", by, text, timeout, unit);
         _wait.withTimeout(timeout, unit).until(textToBePresentInElement(by, text));
-        LOG.debug("waitForElementContainingText done: {}, {}, {}, {}", by, text, timeout, unit);
+        LOG.trace("waitForElementContainingText done: {}, {}, {}, {}", by, text, timeout, unit);
     }
 
     @Override
     public void confirmPrompt() {
-        LOG.debug("confirmPrompt");
+        LOG.trace("confirmPrompt");
         waitForAlert();
         final Alert prompt = _webDriver.switchTo().alert();
         prompt.accept();
-        LOG.debug("confirmPrompt done");
+        LOG.trace("confirmPrompt done");
     }
 
     private void waitForAlert() {
-        LOG.debug("waitForAlert");
+        LOG.trace("waitForAlert");
         _wait.until(alertIsPresent());
-        LOG.debug("waitForAlert done");
+        LOG.trace("waitForAlert done");
     }
 }

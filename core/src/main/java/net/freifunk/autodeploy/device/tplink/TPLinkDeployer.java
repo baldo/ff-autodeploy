@@ -71,7 +71,7 @@ public class TPLinkDeployer implements DeviceDeployer {
 
     @Override
     public void deploy(final File firmwareImage) throws FileNotFoundException {
-        LOG.info("Starting deployment: firmware = {}", firmwareImage);
+        LOG.debug("Starting deployment: firmware = {}", firmwareImage);
         _actor.waitForWebserverBeingAvailable(TP_LINK_WEB_INTERFACE_IP, TP_LINK_WEB_INTERFACE_PORT, 60, SECONDS);
         checkFirmwareImage(firmwareImage);
         goToWebInterface();
@@ -95,6 +95,7 @@ public class TPLinkDeployer implements DeviceDeployer {
     }
 
     private void ensureSupportedDevice() {
+        LOG.debug("Checking device is supported.");
         _actor.selectFrame(MAIN_FRAME_NAME);
         final String hardwareVersionString = _actor.getTextOfElement(HARDWARE_VERSION);
 
@@ -121,11 +122,11 @@ public class TPLinkDeployer implements DeviceDeployer {
     }
 
     private void startFirmwareUpgrade(final File firmwareImage) {
+        LOG.debug("Starting firmware upgrade.");
         _actor.selectFrame(MAIN_FRAME_NAME);
         _actor.chooseFile(FIRMWARE_FILE_CHOOSER, firmwareImage);
 
         if (_actor.usesHtmlUnitDriver()) {
-            // TODO: Custom firmware check?
             // disable checking of firmware as this is not very reliable and requires unnecessarily complicated handling
             _actor.executeJavascript("doSubmit = function () { return true; }");
         }
