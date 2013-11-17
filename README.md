@@ -25,6 +25,17 @@ of a JDK 7 installation by calling `java -version`. Also make sure your
 `JAVA_HOME` variable points to the JDK 7 installation.
 
 
+## Preperations ##
+
+Make sure your (to be flashed) router is connected to your computer via
+ethernet and your ethernet port is configured to having IPs 192.168.0.2/24
+and 192.168.1.2/24. This is required as the router most probably will change
+its IP during deployment from 192.168.0.1 to 192.168.1.1.
+
+*Attention:* Switching ports during deployment (as needed e.g. for the
+WR841N) is currently not supported. You can circumvent this by invoking
+the deploy and configure actions seperately.
+
 ## Running ##
 
 The build will create a `.jar` file containing all required libraries and
