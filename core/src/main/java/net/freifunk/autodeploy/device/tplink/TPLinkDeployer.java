@@ -70,6 +70,28 @@ public class TPLinkDeployer implements DeviceDeployer {
     }
 
     @Override
+    public Device autodetect() {
+        LOG.debug("Trying to detect the device.");
+        try {
+            _actor.waitForWebserverBeingAvailable(TP_LINK_WEB_INTERFACE_IP, TP_LINK_WEB_INTERFACE_PORT, 30, SECONDS);
+            goToWebInterface();
+
+            final Device device = getDevice();
+            LOG.debug("Detected device {}. Checking if it's supported.", device);
+            if (isSupported(device)) {
+                LOG.debug("Device {} is supported.", device);
+                return device;
+            } else {
+                LOG.debug("Device {} is not supported.", device);
+                return null;
+            }
+        } catch (final Throwable t) {
+            LOG.warn("Auto detection failed.", t);
+            return null;
+        }
+    }
+
+    @Override
     public void deploy(final File firmwareImage) throws FileNotFoundException {
         LOG.debug("Starting deployment: firmware = {}", firmwareImage);
         _actor.waitForWebserverBeingAvailable(TP_LINK_WEB_INTERFACE_IP, TP_LINK_WEB_INTERFACE_PORT, 60, SECONDS);
@@ -96,14 +118,22 @@ public class TPLinkDeployer implements DeviceDeployer {
 
     private void ensureSupportedDevice() {
         LOG.debug("Checking device is supported.");
-        _actor.selectFrame(MAIN_FRAME_NAME);
-        final String hardwareVersionString = _actor.getTextOfElement(HARDWARE_VERSION);
+        final Device device = getDevice();
 
-        final Device device = hardwareVersionToDevice(hardwareVersionString);
-
-        if (!SUPPORTED_DEVICES.contains(device)) {
+        if (!isSupported(device)) {
             throw new IllegalStateException("Unsupported device: " + device);
         }
+    }
+
+    private Device getDevice() {
+        _actor.selectFrame(MAIN_FRAME_NAME);
+        final String hardwareVersionString = _actor.getTextOfElement(HARDWARE_VERSION);
+        final Device device = hardwareVersionToDevice(hardwareVersionString);
+        return device;
+    }
+
+    private boolean isSupported(final Device device) {
+        return SUPPORTED_DEVICES.contains(device);
     }
 
     private Device hardwareVersionToDevice(final String hardwareVersionString) {

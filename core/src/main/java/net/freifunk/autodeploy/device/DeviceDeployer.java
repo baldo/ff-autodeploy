@@ -11,6 +11,14 @@ import java.io.FileNotFoundException;
 public interface DeviceDeployer {
 
     /**
+     * Tries to detect the device connected.
+     *
+     * @return <code>null</code> iff the device could not be detected or is
+     *         not supported by the {@link DeviceDeployer}.
+     */
+    Device autodetect();
+
+    /**
      * Deploys the specified firmware image.
      */
     void deploy(File firmwareImage) throws FileNotFoundException;

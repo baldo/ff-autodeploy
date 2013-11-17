@@ -27,18 +27,25 @@ public abstract class PhaseOptions {
 
         private final Device _device;
         private final File _firmwareImage;
+        private final boolean _autodetectDevice;
 
         private DeployPhaseOptions(
             final Device device,
+            final boolean autodetectDevice,
             final File firmwareImage
         ) {
             super(DEPLOY);
             _device = device;
+            _autodetectDevice = autodetectDevice;
             _firmwareImage = firmwareImage;
         }
 
         public Device getDevice() {
             return _device;
+        }
+
+        public boolean shallAutodetectDevice() {
+            return _autodetectDevice;
         }
 
         public File getFirmwareImage() {
@@ -113,12 +120,15 @@ public abstract class PhaseOptions {
 
     /**
      * Options for deploying the firmware to the device.
+     * @param autodetectDevice
      */
     public static PhaseOptions forDeployPhase(
         final Device device,
+        final boolean autodetectDevice,
         final File firmwareImage
     ) {
-        return new DeployPhaseOptions(device, firmwareImage);
+        Preconditions.checkArgument((device == null) == autodetectDevice, "Either autodetection must be set or a device be given.");
+        return new DeployPhaseOptions(device, autodetectDevice, firmwareImage);
     }
 
     /**

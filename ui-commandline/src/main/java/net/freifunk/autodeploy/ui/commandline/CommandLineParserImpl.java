@@ -41,6 +41,7 @@ public class CommandLineParserImpl implements CommandLineParser {
     private static final String GENERATE_PASSWORD_OPTION = "P";
     private static final String NODENAME_OPTION = "n";
     private static final String MODEL_OPTION = "m";
+    private static final String AUTODETECT_MODEL_OPTION = "a";
 
     private final DeviceService _deviceService;
     private final FirmwareService _firmwareService;
@@ -67,6 +68,7 @@ public class CommandLineParserImpl implements CommandLineParser {
         options.addOption(new Option(GENERATE_PASSWORD_OPTION, "gen-password", false, "The root password for the device will be generated."));
         options.addOption(new Option(NODENAME_OPTION, "nodename", true, "The name for the node. Will also be the hostname."));
         options.addOption(new Option(MODEL_OPTION, "model", true, "The model."));
+        options.addOption(new Option(AUTODETECT_MODEL_OPTION, "autodetect-model", false, "Autodetect the model."));
 
         return options;
     }
@@ -119,15 +121,39 @@ public class CommandLineParserImpl implements CommandLineParser {
 
         final boolean deploy = commandLine.hasOption(DEPLOY_OPTION);
         if (deploy) {
-            final String deviceString = getArgValue(
+            final boolean deviceGiven = commandLine.hasOption(MODEL_OPTION);
+            final boolean autodetectDevice = commandLine.hasOption(AUTODETECT_MODEL_OPTION);
+
+            if (deviceGiven && autodetectDevice) {
+                throw new CommandLineParsingException(
+                    "Specifying both --" + getLongOption(options, MODEL_OPTION) +
+                    " and --" + getLongOption(options, AUTODETECT_MODEL_OPTION) + " is not supported."
+                );
+            }
+
+            if (!deviceGiven && !autodetectDevice) {
+                throw new CommandLineParsingException(
+                    "Neither --" + getLongOption(options, MODEL_OPTION) +
+                    " nor --" + getLongOption(options, AUTODETECT_MODEL_OPTION) + " is given."
+                );
+            }
+
+            final String deviceString = autodetectDevice ? null : getArgValue(
                 commandLine,
                 MODEL_OPTION,
                 "Model not set."
             );
-            final Device device = _deviceService.findSupportedDevice(deviceString);
 
-            if (device == null) {
-                throw new CommandLineParsingException("Unknown device: " + deviceString);
+            final Device device;
+
+            if (deviceGiven) {
+                device = _deviceService.findSupportedDevice(deviceString);
+
+                if (device == null) {
+                    throw new CommandLineParsingException("Unknown device: " + deviceString);
+                }
+            } else {
+                device = null;
             }
 
             final String firmwareFileString = getArgValue(
@@ -139,6 +165,7 @@ public class CommandLineParserImpl implements CommandLineParser {
             final File firmwareImage = new File(firmwareFileString);
             phases.add(PhaseOptions.forDeployPhase(
                 device,
+                autodetectDevice,
                 firmwareImage
             ));
         }

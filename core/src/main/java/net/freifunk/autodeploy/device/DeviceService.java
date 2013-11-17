@@ -10,6 +10,13 @@ import java.util.Set;
 public interface DeviceService {
 
     /**
+     * Attempts to detect a connected device.
+     *
+     * Fails if the device cannot be detected.
+     */
+    Device autodetectDevice();
+
+    /**
      * @return the supported {@link Device} or <code>null</code> if the device is not supported.
      */
     Device findSupportedDevice(String deviceString);

@@ -27,6 +27,7 @@ import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
@@ -83,7 +84,10 @@ public class CommandLineMain {
                         throw new IllegalStateException("Options of deploy phase have wrong class: " + phaseOptions.getClass());
                     }
                     final DeployPhaseOptions deployOptions = (DeployPhaseOptions) phaseOptions;
-                    final DeviceDeployer deployer = _deviceService.getDeployer(deployOptions.getDevice());
+
+                    final Device device = deployOptions.shallAutodetectDevice() ? _deviceService.autodetectDevice() : deployOptions.getDevice();
+                    Preconditions.checkState(device != null, "Device should not be null.");
+                    final DeviceDeployer deployer = _deviceService.getDeployer(device);
                     deployer.deploy(deployOptions.getFirmwareImage());
                 }
 
@@ -119,7 +123,6 @@ public class CommandLineMain {
             _webDriver.close();
         }
     }
-
 
     private static String generatePassword() {
         return RandomStringUtils.randomAlphanumeric(12);
