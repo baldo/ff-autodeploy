@@ -1,4 +1,4 @@
-package net.freifunk.autodeploy;
+package net.freifunk.autodeploy.selenium;
 
 import java.net.URL;
 
