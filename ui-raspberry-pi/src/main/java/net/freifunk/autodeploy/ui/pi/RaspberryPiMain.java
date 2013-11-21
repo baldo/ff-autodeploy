@@ -1,8 +1,8 @@
 package net.freifunk.autodeploy.ui.pi;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import net.freifunk.autodeploy.ui.pi.peripherals.ButtonDriver;
-import net.freifunk.autodeploy.ui.pi.peripherals.ButtonListener;
+import net.freifunk.autodeploy.ui.pi.peripherals.JoystickDriver;
+import net.freifunk.autodeploy.ui.pi.peripherals.JoystickListener;
 import net.freifunk.autodeploy.ui.pi.peripherals.LCDDriver;
 
 import com.google.inject.Guice;
@@ -15,7 +15,7 @@ import com.google.inject.Inject;
  */
 public class RaspberryPiMain {
 
-    @Inject private ButtonDriver _buttonDriver;
+    @Inject private JoystickDriver _buttonDriver;
     @Inject private LCDDriver _lcdDriver;
 
     public RaspberryPiMain() {
@@ -30,17 +30,33 @@ public class RaspberryPiMain {
         try {
             _buttonDriver.init();
             _lcdDriver.init();
+            _lcdDriver.writeString("Test");
 
-            _buttonDriver.listen(new ButtonListener() {
+            _buttonDriver.listen(new JoystickListener() {
 
                 @Override
-                public void pressed() {
-                    _lcdDriver.writeString("Pressed...");
+                public void up() {
+                    _lcdDriver.writeString("Up...");
                 }
 
                 @Override
-                public void released() {
-                    _lcdDriver.writeString("Released...");
+                public void down() {
+                    _lcdDriver.writeString("Down...");
+                }
+
+                @Override
+                public void left() {
+                    _lcdDriver.writeString("Left...");
+                }
+
+                @Override
+                public void right() {
+                    _lcdDriver.writeString("Right...");
+                }
+
+                @Override
+                public void button() {
+                    _lcdDriver.writeString("Button...");
                 }
             });
 

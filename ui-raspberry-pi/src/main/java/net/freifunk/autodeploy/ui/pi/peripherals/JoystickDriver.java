@@ -1,11 +1,11 @@
 package net.freifunk.autodeploy.ui.pi.peripherals;
 
 /**
- * Driver for listening for button events.
+ * Driver for listening for joystick events.
  *
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
-public interface ButtonDriver {
+public interface JoystickDriver {
 
     /**
      * Initializes the driver.
@@ -20,7 +20,7 @@ public interface ButtonDriver {
     /**
      * Listens for state changes of the button. An existing listener will be removed.
      */
-    void listen(ButtonListener listener);
+    void listen(JoystickListener listener);
 
     /**
      * Stops listening for the button.
