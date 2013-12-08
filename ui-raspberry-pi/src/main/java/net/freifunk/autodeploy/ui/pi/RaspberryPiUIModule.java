@@ -5,6 +5,8 @@ import net.freifunk.autodeploy.ui.pi.peripherals.JoystickDriver;
 import net.freifunk.autodeploy.ui.pi.peripherals.GPIOJoystickDriverImpl;
 import net.freifunk.autodeploy.ui.pi.peripherals.GroveSerialLCDDriverImpl;
 import net.freifunk.autodeploy.ui.pi.peripherals.LCDDriver;
+import net.freifunk.autodeploy.printing.LabelPrintingService;
+import net.freifunk.autodeploy.printing.LabelPrintingServiceImpl;
 
 import com.google.inject.AbstractModule;
 
@@ -14,5 +16,6 @@ public class RaspberryPiUIModule extends AbstractModule {
     protected void configure() {
         bind(JoystickDriver.class).to(GPIOJoystickDriverImpl.class).in(SINGLETON);
         bind(LCDDriver.class).to(GroveSerialLCDDriverImpl.class).in(SINGLETON);
+        bind(LabelPrintingService.class).to(LabelPrintingServiceImpl.class).in(SINGLETON);
     }
 }
