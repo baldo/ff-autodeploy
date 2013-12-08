@@ -21,5 +21,5 @@ public interface DeviceDeployer {
     /**
      * Deploys the specified firmware image.
      */
-    void deploy(File firmwareImage) throws FileNotFoundException;
+    DetailedDevice deploy(File firmwareImage) throws FileNotFoundException;
 }

@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.Set;
 
+import net.freifunk.autodeploy.device.DetailedDevice;
 import net.freifunk.autodeploy.device.Device;
 import net.freifunk.autodeploy.device.DeviceDeployer;
 import net.freifunk.autodeploy.selenium.Actor;
@@ -53,6 +54,7 @@ public class TPLinkDeployer implements DeviceDeployer {
 
     // status page
     private static final By HARDWARE_VERSION = By.id("hversion");
+    private static final By MAC_ADDRESS = By.id("lanMac");
 
     // firmware upgrade page
     private static final String MAIN_FRAME_NAME = "mainFrame";
@@ -92,14 +94,15 @@ public class TPLinkDeployer implements DeviceDeployer {
     }
 
     @Override
-    public void deploy(final File firmwareImage) throws FileNotFoundException {
+    public DetailedDevice deploy(final File firmwareImage) throws FileNotFoundException {
         LOG.debug("Starting deployment: firmware = {}", firmwareImage);
         _actor.waitForWebserverBeingAvailable(TP_LINK_WEB_INTERFACE_IP, TP_LINK_WEB_INTERFACE_PORT, 60, SECONDS);
         checkFirmwareImage(firmwareImage);
         goToWebInterface();
-        ensureSupportedDevice();
+        final DetailedDevice detailedDevice = checkSupportedDevice();
         openFirmwareUpgradePage();
         startFirmwareUpgrade(firmwareImage);
+        return detailedDevice;
     }
 
     private void checkFirmwareImage(final File firmwareImage) throws FileNotFoundException {
@@ -116,13 +119,17 @@ public class TPLinkDeployer implements DeviceDeployer {
         _actor.navigateTo(TP_LINK_WEB_INTERFACE_URL);
     }
 
-    private void ensureSupportedDevice() {
+    private DetailedDevice checkSupportedDevice() {
         LOG.debug("Checking device is supported.");
         final Device device = getDevice();
 
         if (!isSupported(device)) {
             throw new IllegalStateException("Unsupported device: " + device);
         }
+
+        final String mac = getMac();
+
+        return new DetailedDevice(device, mac);
     }
 
     private Device getDevice() {
@@ -130,6 +137,12 @@ public class TPLinkDeployer implements DeviceDeployer {
         final String hardwareVersionString = _actor.getTextOfElement(HARDWARE_VERSION);
         final Device device = hardwareVersionToDevice(hardwareVersionString);
         return device;
+    }
+
+    private String getMac() {
+        _actor.selectFrame(MAIN_FRAME_NAME);
+        final String mac = _actor.getTextOfElement(MAC_ADDRESS);
+        return mac.toLowerCase().replace("-", ":");
     }
 
     private boolean isSupported(final Device device) {

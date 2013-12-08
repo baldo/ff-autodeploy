@@ -7,6 +7,15 @@ package net.freifunk.autodeploy.ui.pi.peripherals;
  */
 public interface JoystickDriver {
 
+    public static enum JoystickEvent {
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT,
+        BUTTON,
+        ;
+    }
+
     /**
      * Initializes the driver.
      */
@@ -18,12 +27,12 @@ public interface JoystickDriver {
     void shutdown();
 
     /**
-     * Listens for state changes of the button. An existing listener will be removed.
+     * Reads the next {@link JoystickEvent}. Will block until an event occurs.
      */
-    void listen(JoystickListener listener);
+    JoystickEvent read();
 
     /**
-     * Stops listening for the button.
+     * Flushes the buffer. Old events will be discarded.
      */
-    void unlisten();
+    void flush();
 }

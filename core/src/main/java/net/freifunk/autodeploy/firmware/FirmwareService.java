@@ -1,6 +1,11 @@
 package net.freifunk.autodeploy.firmware;
 
+import java.io.File;
 import java.util.Set;
+
+import net.freifunk.autodeploy.device.Device;
+
+import com.google.common.collect.Multimap;
 
 /**
  * Service for handling {@link Firmware}s.
@@ -23,4 +28,15 @@ public interface FirmwareService {
      * @return the firmware configurator for the given firmware.
      */
     FirmwareConfigurator getConfigurator(Firmware firmware);
+
+    /**
+     * Looks in the given directory for firmware images. A {@link Multimap} of {@link Device}s and
+     * their available {@link Firmware}s will be returned.
+     */
+    Multimap<Device, Firmware> getAvailableDeviceFirmwareMappings(File firmwareImageDirectory);
+
+    /**
+     * Get the firmware file.
+     */
+    File findFirmwareImage(File firmwareImageDirectory, Device device, Firmware firmware);
 }

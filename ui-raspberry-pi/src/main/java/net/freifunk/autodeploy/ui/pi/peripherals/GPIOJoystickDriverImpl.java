@@ -1,9 +1,17 @@
 package net.freifunk.autodeploy.ui.pi.peripherals;
 
 import static com.pi4j.io.gpio.PinState.HIGH;
+import static net.freifunk.autodeploy.ui.pi.peripherals.JoystickDriver.JoystickEvent.BUTTON;
+import static net.freifunk.autodeploy.ui.pi.peripherals.JoystickDriver.JoystickEvent.DOWN;
+import static net.freifunk.autodeploy.ui.pi.peripherals.JoystickDriver.JoystickEvent.LEFT;
+import static net.freifunk.autodeploy.ui.pi.peripherals.JoystickDriver.JoystickEvent.RIGHT;
+import static net.freifunk.autodeploy.ui.pi.peripherals.JoystickDriver.JoystickEvent.UP;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
@@ -21,6 +29,35 @@ import com.pi4j.io.gpio.event.GpioPinListenerDigital;
  */
 public class GPIOJoystickDriverImpl implements JoystickDriver {
 
+    private class PinListener implements GpioPinListenerDigital {
+        private final Pin _pin;
+        private final JoystickEvent _event;
+
+        public PinListener(final Pin pin, final JoystickEvent event) {
+            _pin = pin;
+            _event = event;
+        }
+
+        @Override
+        public void handleGpioPinDigitalStateChangeEvent(
+            final GpioPinDigitalStateChangeEvent event
+        ) {
+            synchronized (GPIOJoystickDriverImpl.this) {
+                if (event.getState() != HIGH) {
+                    return;
+                }
+
+                final int pinAddress = event.getPin().getPin().getAddress();
+
+                if (pinAddress != _pin.getAddress()) {
+                    return;
+                }
+
+                GPIOJoystickDriverImpl.this.push(_event);
+            }
+        }
+    }
+
     private static final Pin UP_PIN = RaspiPin.GPIO_00;
     private static final Pin DOWN_PIN = RaspiPin.GPIO_01;
     private static final Pin LEFT_PIN = RaspiPin.GPIO_02;
@@ -28,83 +65,70 @@ public class GPIOJoystickDriverImpl implements JoystickDriver {
     private static final Pin BUTTON_PIN = RaspiPin.GPIO_04;
 
     private static final Set<Pin> PINS = ImmutableSet.of(UP_PIN, DOWN_PIN, LEFT_PIN, RIGHT_PIN, BUTTON_PIN);
+    private static final Map<Integer, JoystickEvent> EVENT_BY_PIN_ADDRESS = ImmutableMap.of(
+        UP_PIN.getAddress(), UP,
+        DOWN_PIN.getAddress(), DOWN,
+        LEFT_PIN.getAddress(), LEFT,
+        RIGHT_PIN.getAddress(), RIGHT,
+        BUTTON_PIN.getAddress(), BUTTON
+    );
 
     private static final PinPullResistance RESISTANCE = PinPullResistance.PULL_UP;
 
     private final GpioController _gpio;
-    private JoystickListener _listener;
+    private final AtomicReference<JoystickEvent> _buffer;
 
     public GPIOJoystickDriverImpl() {
         _gpio = GpioFactory.getInstance();
-        _listener = null;
+        _buffer = new AtomicReference<JoystickEvent>();
     }
 
     @Override
     public synchronized void init() {
-        final GpioPinListenerDigital pinListener = new GpioPinListenerDigital() {
-
-            @Override
-            public void handleGpioPinDigitalStateChangeEvent(
-                final GpioPinDigitalStateChangeEvent event
-            ) {
-                synchronized (GPIOJoystickDriverImpl.this) {
-                    if (_listener == null) {
-                        return;
-                    }
-
-                    if (event.getState() != HIGH) {
-                        return;
-                    }
-
-                    final int pinAddress = event.getPin().getPin().getAddress();
-
-                    if (pinAddress == UP_PIN.getAddress()) {
-                        _listener.up();
-                        return;
-                    }
-
-                    if (pinAddress == DOWN_PIN.getAddress()) {
-                        _listener.down();
-                        return;
-                    }
-
-                    if (pinAddress == LEFT_PIN.getAddress()) {
-                        _listener.left();
-                        return;
-                    }
-
-                    if (pinAddress == RIGHT_PIN.getAddress()) {
-                        _listener.right();
-                        return;
-                    }
-
-                    if (pinAddress == BUTTON_PIN.getAddress()) {
-                        _listener.button();
-                        return;
-                    }
-                }
-            }
-        };
-
         for (final Pin pin: PINS) {
-            _gpio.provisionDigitalInputPin(pin, RESISTANCE).addListener(pinListener);
+            final JoystickEvent event = EVENT_BY_PIN_ADDRESS.get(Integer.valueOf(pin.getAddress()));
+            _gpio.provisionDigitalInputPin(pin, RESISTANCE).addListener(new PinListener(pin, event));
         }
     }
 
     @Override
     public synchronized void shutdown() {
-        unlisten();
         _gpio.removeAllListeners();
         _gpio.shutdown();
     }
 
-    @Override
-    public synchronized void listen(final JoystickListener listener) {
-        _listener = listener;
+    private void push(final JoystickEvent event) {
+        synchronized (_buffer) {
+            _buffer.set(event);
+            _buffer.notifyAll();
+        }
+    }
+
+    private JoystickEvent pop() {
+        synchronized (_buffer) {
+            JoystickEvent joystickEvent = _buffer.getAndSet(null);
+            while (joystickEvent == null) {
+                try {
+                    _buffer.wait();
+                } catch (final InterruptedException e) {
+                    throw new IllegalStateException(e);
+                }
+
+                joystickEvent = _buffer.getAndSet(null);
+            }
+            return joystickEvent;
+        }
     }
 
     @Override
-    public synchronized void unlisten() {
-        _listener = null;
+    public JoystickEvent read() {
+        return pop();
+    }
+
+    @Override
+    public void flush() {
+        synchronized (_buffer) {
+            _buffer.set(null);
+        }
     }
 }
