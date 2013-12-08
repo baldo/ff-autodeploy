@@ -85,7 +85,13 @@ public class CommandLineMain {
                     }
                     final DeployPhaseOptions deployOptions = (DeployPhaseOptions) phaseOptions;
 
-                    final Device device = deployOptions.shallAutodetectDevice() ? _deviceService.autodetectDevice() : deployOptions.getDevice();
+                    final Device device;
+                    if (deployOptions.shallAutodetectDevice()) {
+                        device = _deviceService.autodetectDevice();
+                        Preconditions.checkState(device != null, "Could not detect any device.");
+                    } else {
+                        device = deployOptions.getDevice();
+                    }
                     Preconditions.checkState(device != null, "Device should not be null.");
                     final DeviceDeployer deployer = _deviceService.getDeployer(device);
                     deployer.deploy(deployOptions.getFirmwareImage());

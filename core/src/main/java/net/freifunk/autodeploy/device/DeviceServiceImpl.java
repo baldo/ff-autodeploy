@@ -47,7 +47,7 @@ public class DeviceServiceImpl implements DeviceService {
             }
         }
 
-        throw new IllegalStateException("Could not detect any device.");
+        return null;
     }
 
     @Override

@@ -12,7 +12,7 @@ public interface DeviceService {
     /**
      * Attempts to detect a connected device.
      *
-     * Fails if the device cannot be detected.
+     * @return <code>null</code> iff no device could be detected.
      */
     Device autodetectDevice();
 
