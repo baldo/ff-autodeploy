@@ -10,5 +10,5 @@ public interface FirmwareConfigurator {
     /**
      * Configures the Freifunk firmware. The given password will be set for the root user on the device.
      */
-    void configure(String password, String nodename);
+    FirmwareConfiguration configure(String password, String nodename);
 }

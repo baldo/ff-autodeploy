@@ -42,7 +42,7 @@ public abstract class AbstractFreifunkNordConfigurator implements FirmwareConfig
     }
 
     @Override
-    public void configure(final String password, final String nodename) {
+    public FirmwareConfiguration configure(final String password, final String nodename) {
         LOG.debug("Starting firmware configuration.");
         _actor.waitForWebserverBeingAvailable(CONFIG_MODE_IP, CONFIG_MODE_PORT, 180, SECONDS);
         goToConfigMode();
@@ -50,8 +50,11 @@ public abstract class AbstractFreifunkNordConfigurator implements FirmwareConfig
         setPassword(password);
         setHostName(nodename);
         // TODO: Allow to disable VPN meshing.
-        activateVPN();
+        final String vpnKey = activateVPN();
         bootIntoRegularMode();
+
+        // TODO: Do community specific configuration.
+        return new FreifunkNordFirmwareConfiguration(nodename, password, vpnKey);
     }
 
     private void goToConfigMode() {
@@ -77,15 +80,16 @@ public abstract class AbstractFreifunkNordConfigurator implements FirmwareConfig
         _actor.clickElement(NEXT_BUTTON);
     }
 
-    private void activateVPN() {
+    private String activateVPN() {
         LOG.debug("Activating VPN meshing.");
         _actor.updateCheckbox(MESH_VIA_VPN_CHECKBOX, true);
         // TODO: Allow setting bandwidth limit.
         _actor.clickElement(NEXT_BUTTON);
 
-        getVPNKey();
+        final String vpnKey = getVPNKey();
         _actor.clickElement(NEXT_BUTTON);
-        // TODO: Do community specific configuration.
+
+        return vpnKey;
     }
 
     private String getVPNKey() {
