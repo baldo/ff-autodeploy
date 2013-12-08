@@ -21,6 +21,7 @@ public class FirmwareConfiguratorModule extends PrivateModule {
     protected final void configure() {
         bindConfigurator(FreifunkHamburgConfigurator.class);
         bindConfigurator(FreifunkKielConfigurator.class);
+        bindConfigurator(FreifunkLuebeckConfigurator.class);
 
         expose(new TypeLiteral<Map<Firmware, FirmwareConfigurator>>() {});
     }
