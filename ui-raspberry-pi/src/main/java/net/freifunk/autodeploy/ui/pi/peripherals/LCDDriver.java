@@ -1,5 +1,6 @@
 package net.freifunk.autodeploy.ui.pi.peripherals;
 
+
 /**
  * Driver to display information on an attached LCD.
  *
@@ -21,4 +22,9 @@ public interface LCDDriver {
      * Displays the given {@link String} on the display.
      */
     void writeString(String str);
+
+    /**
+     * Displays the given {@link String}s on the display.
+     */
+    void writeLines(String ... lines);
 }

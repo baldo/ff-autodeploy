@@ -86,12 +86,34 @@ public class GroveSerialLCDDriverImpl implements LCDDriver {
 
     @Override
     public void writeString(final String str) {
-        final String padded = str + Strings.repeat(" ", CHARS - str.length());
+        final String padded = ensureLength(str, CHARS);
 
         for (int row = 0; row < ROWS; row ++) {
             final String line = padded.substring(row * COLUMNS, (row + 1) * COLUMNS);
             writeLine(row, line);
         }
+    }
+
+    @Override
+    public void writeLines(final String ... lines) {
+        final StringBuilder builder = new StringBuilder();
+
+        for (final String line: lines) {
+            builder.append(ensureLength(line, COLUMNS));
+        }
+
+        writeString(builder.toString());
+    }
+
+    private String ensureLength(final String str, final int expectedLength) {
+        final int actualLength = str.length();
+        if (actualLength < expectedLength) {
+            return str + Strings.repeat(" ", expectedLength - actualLength);
+        }
+        if (actualLength > expectedLength) {
+            return str.substring(0, expectedLength);
+        }
+        return str;
     }
 
     private void writeLine(final int row, final String line) {
