@@ -28,6 +28,7 @@ import com.google.inject.Inject;
 public class TPLinkDeployer implements DeviceDeployer {
 
     public static final Set<Device> SUPPORTED_DEVICES = ImmutableSet.of(
+        new Device("WDR3500", "v1"),
         new Device("WDR3600", "v1"),
         new Device("WR741N", "v4"),
         new Device("WR741ND", "v4"),
