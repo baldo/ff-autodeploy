@@ -1,13 +1,12 @@
 package net.freifunk.autodeploy.device;
 
-import net.freifunk.autodeploy.firmware.FirmwareConfiguration;
 
 /**
  * Detailed information about a specific device.
  *
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
-public class DetailedDevice implements FirmwareConfiguration {
+public class DetailedDevice {
 
     private final Device _device;
     private final String _mac;

@@ -7,7 +7,9 @@ dependencies {
         'com.google.guava:guava:14.0.1',
         'com.google.inject:guice:3.0',
         'com.google.inject.extensions:guice-multibindings:3.0',
-        'ch.qos.logback:logback-classic:1.0.13'
+        'ch.qos.logback:logback-classic:1.0.13',
+        'org.apache.httpcomponents:httpclient:4.3.1',
+        'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
 }
 
 if (System.properties['webdriver.firefox.allow'] == "true") {

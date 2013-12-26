@@ -1,6 +1,10 @@
 package net.freifunk.autodeploy.firmware;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+
+import java.net.URI;
+
+import net.freifunk.autodeploy.device.DetailedDevice;
 import net.freifunk.autodeploy.selenium.Actor;
 
 import org.openqa.selenium.By;
@@ -53,8 +57,22 @@ public abstract class AbstractFreifunkNordConfigurator implements FirmwareConfig
         final String vpnKey = activateVPN();
         bootIntoRegularMode();
 
-        // TODO: Do community specific configuration.
         return new FreifunkNordFirmwareConfiguration(nodename, password, vpnKey);
+    }
+
+    @Override
+    public boolean supportsNodeRegistration() {
+        return false;
+    }
+
+    @Override
+    public String registerNode(final FirmwareConfiguration configuration, final DetailedDevice device) {
+        throw new UnsupportedOperationException("Node registration not supported: " + this.getClass().getName());
+    }
+
+    @Override
+    public URI getNodeUpdateUri() {
+        return null;
     }
 
     private void goToConfigMode() {

@@ -6,6 +6,7 @@ import static net.freifunk.autodeploy.ui.pi.peripherals.JoystickDriver.JoystickE
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,6 +25,8 @@ import net.freifunk.autodeploy.ui.pi.peripherals.LCDDriver;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.openqa.selenium.browserlaunchers.Sleeper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Multimap;
@@ -38,6 +41,8 @@ import com.google.inject.Inject;
  */
 public class RaspberryPiMain {
 
+    private static final Logger LOG = LoggerFactory.getLogger(RaspberryPiMain.class);
+
     @Inject private JoystickDriver _joystickDriver;
     @Inject private LCDDriver _lcdDriver;
     @Inject private DeviceService _deviceService;
@@ -49,64 +54,119 @@ public class RaspberryPiMain {
     }
 
     public static void main(final String args[]) throws InterruptedException {
+        LOG.debug("Running main.");
+
         new RaspberryPiMain().run(args);
     }
 
     private void run(final String[] args) {
+        LOG.debug("Application context bound.");
+
         if (args == null || args.length != 1) {
             throw new IllegalArgumentException("Invalid commandline arguments. Expected firmware image path only.");
         }
 
         final File firmwareImageDirectory = new File(args[0]);
+        LOG.debug("Using firmware from: " + firmwareImageDirectory);
 
         try {
             _joystickDriver.init();
             _lcdDriver.init();
 
+            LOG.debug("Initialization done.");
+
             while (true) {
                 final Device device = detectDevice();
+
+                LOG.debug("Checking available firmware images.");
 
                 final Multimap<Device, Firmware> availableFirmwares = _firmwareService.getAvailableDeviceFirmwareMappings(firmwareImageDirectory);
                 final Collection<Firmware> deviceFirmwares = availableFirmwares.get(device);
 
                 if (deviceFirmwares == null || deviceFirmwares.isEmpty()) {
+                    LOG.debug("No matching image found. Waiting for confirmation.");
+
                     _lcdDriver.writeLines("No firmware", "found. :-(  [OK]");
                     waitForButton();
                 } else {
                     final Firmware firmware = chooseFirmware(deviceFirmwares);
 
                     if (firmware == null) {
+                        LOG.debug("No firmware selected. Aborting.");
                         continue;
                     }
+
+                    LOG.debug("Firmware selected: " + firmware.getName());
 
                     final String password = generateRandomPassword();
                     final String nodename = generateRandomNodename(firmware);
 
+                    LOG.debug("Password and nodename generated.");
+
                     final DeviceDeployer deployer = _deviceService.getDeployer(device);
                     final FirmwareConfigurator configurator = _firmwareService.getConfigurator(firmware);
+
+                    LOG.debug("Deployer and configurator loaded.");
 
                     final File firmwareImage = _firmwareService.findFirmwareImage(firmwareImageDirectory, device, firmware);
 
                     if (firmwareImage == null) {
+                        LOG.debug("No firmware image found. Waiting for confirmation.");
+
                         _lcdDriver.writeLines("No firmware", "found. :-(  [OK]");
                         waitForButton();
                         continue;
                     }
 
+                    LOG.debug("Matching firmware image: " + firmwareImage);
+
                     final DetailedDevice detailedDevice;
                     try {
+                        LOG.debug("Starting installation.");
+
                         _lcdDriver.writeLines("Installing...", "Please wait...");
                         detailedDevice = deployer.deploy(firmwareImage);
+
+                        LOG.debug("Installation done.");
                     } catch (final FileNotFoundException e) {
                         throw new IllegalStateException("Could not deploy firmware.", e);
                     }
+
+                    LOG.debug("Starting configuration.");
+
                     _lcdDriver.writeLines("Configuring...", "Please wait...");
                     final FirmwareConfiguration configuration = configurator.configure(password, nodename);
 
+                    LOG.debug("Configuration done.");
+
+                    final String updateToken;
+                    final URI updateUri;
+                    if (configurator.supportsNodeRegistration()) {
+                        LOG.debug("Starting node registration.");
+
+                        updateToken = configurator.registerNode(configuration, detailedDevice);
+
+                        LOG.debug("Node registration done.");
+
+                        updateUri = configurator.getNodeUpdateUri();
+                    } else {
+                        LOG.debug("Node registration not supported. Skipping.");
+
+                        updateToken = null;
+                        updateUri = null;
+                    }
+
+                    LOG.debug("Printing label.");
+
                     _labelPrintingService.printLabel(
+                        firmware,
                         detailedDevice,
-                        configuration
+                        configuration,
+                        updateToken,
+                        updateUri
                     );
+
+                    LOG.debug("We are done. Waiting for confirmation.");
 
                     _lcdDriver.writeLines("We are done...", "            [OK]");
                     waitForButton();
@@ -114,6 +174,8 @@ public class RaspberryPiMain {
             }
         }
         finally {
+            LOG.debug("Shutting down.");
+
             try {
                 _joystickDriver.shutdown();
             }
@@ -124,25 +186,35 @@ public class RaspberryPiMain {
     }
 
     private Device detectDevice() {
+        LOG.debug("Waiting for confirmation before detecting device.");
+
         _lcdDriver.writeLines("Connect device", "            [OK]");
         waitForButton();
 
         Device device = null;
         while (device == null) {
+            LOG.debug("Starting detection.");
+
             _lcdDriver.writeLines("Detecting...", "Please wait...");
             device = _deviceService.autodetectDevice();
 
             if (device == null) {
+                LOG.debug("No device found. Waiting for confirmation.");
+
                 _lcdDriver.writeLines("Detection failed", "Retry?     [Yes]");
                 waitForButton();
             }
         }
+
+        LOG.debug("Device detected: " + device.asString());
 
         _lcdDriver.writeLines(device.asString(), "          [Next]");
         return device;
     }
 
     private Firmware chooseFirmware(final Collection<Firmware> deviceFirmwares) {
+        LOG.debug("Selecting firmware.");
+
         final List<Firmware> firmwares = Ordering.natural().sortedCopy(deviceFirmwares);
         final int numFirmwares = firmwares.size();
         Preconditions.checkState(numFirmwares > 0, "No firmwares found.");
@@ -190,6 +262,6 @@ public class RaspberryPiMain {
     }
 
     private String generateRandomNodename(final Firmware firmware) {
-        return firmware.getName() + "_" + RandomStringUtils.randomAlphanumeric(12);
+        return firmware.getName() + "_" + RandomStringUtils.randomAlphanumeric(8);
     }
 }

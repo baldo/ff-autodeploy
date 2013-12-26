@@ -14,9 +14,28 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="ffnord-label.svg">
+   sodipodi:docname="ffhh-label.svg"
+   inkscape:export-filename="/tmp/ffhh-label.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300">
   <defs
-     id="defs4" />
+     id="defs4">
+    <filter
+       id="filter3184"
+       inkscape:label="Desaturate"
+       x="0"
+       y="0"
+       width="1"
+       height="1"
+       inkscape:menu="Color"
+       inkscape:menu-tooltip="Render in shades of gray by reducing saturation to zero"
+       color-interpolation-filters="sRGB">
+      <feColorMatrix
+         id="feColorMatrix3186"
+         type="saturate"
+         values="0" />
+    </filter>
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -24,15 +43,15 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.7933712"
-     inkscape:cx="179.50202"
-     inkscape:cy="102.07426"
+     inkscape:zoom="2"
+     inkscape:cx="144.95862"
+     inkscape:cy="83.815914"
      inkscape:document-units="px"
      inkscape:current-layer="g3090"
      showgrid="false"
      units="mm"
-     inkscape:window-width="798"
-     inkscape:window-height="884"
+     inkscape:window-width="1600"
+     inkscape:window-height="886"
      inkscape:window-x="0"
      inkscape:window-y="14"
      inkscape:window-maximized="0" />
@@ -44,7 +63,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -76,40 +95,40 @@
       <text
          xml:space="preserve"
          style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-         x="65.916153"
+         x="69.916153"
          y="953.95294"
          id="text3042"
          sodipodi:linespacing="125%"><tspan
            sodipodi:role="line"
-           x="65.916153"
+           x="69.916153"
            y="953.95294"
            style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
            id="tspan3052">{nodename}</tspan><tspan
            sodipodi:role="line"
-           x="65.916153"
+           x="69.916153"
            y="966.45294"
            style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
            id="tspan3416">{password}</tspan></text>
       <text
          xml:space="preserve"
          style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
-         x="169.91615"
+         x="165.91615"
          y="953.95294"
          id="text3438"
          sodipodi:linespacing="125%"><tspan
            sodipodi:role="line"
-           x="169.91615"
+           x="165.91615"
            y="953.95294"
            id="tspan3444"
            style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">Modell:</tspan><tspan
            sodipodi:role="line"
-           x="169.91615"
+           x="165.91615"
            y="966.45294"
            id="tspan3446"
            style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">MAC:</tspan><tspan
            id="tspan3448"
            sodipodi:role="line"
-           x="169.91615"
+           x="165.91615"
            y="978.95294"
            style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial" /></text>
       <text
@@ -145,24 +164,58 @@
          sodipodi:linespacing="125%"
          id="text3541"
          y="983.95294"
-         x="65.916153"
+         x="69.916153"
          style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
          xml:space="preserve"><tspan
            id="tspan3547"
            style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
            y="983.95294"
-           x="65.916153"
+           x="69.916153"
            sodipodi:role="line">{vpnKey1}</tspan><tspan
            id="tspan3549"
            style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
            y="996.45294"
-           x="65.916153"
+           x="69.916153"
            sodipodi:role="line">{vpnKey2}</tspan><tspan
            id="tspan3551"
            style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
            y="1008.9529"
-           x="65.916153"
+           x="69.916153"
            sodipodi:role="line" /></text>
-    </g>
+      <text
+         sodipodi:linespacing="125%"
+         id="text3576"
+         y="1013.9529"
+         x="19.916155"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+         xml:space="preserve"><tspan
+           style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+           y="1013.9529"
+           x="19.916155"
+           sodipodi:role="line"
+           id="tspan3578">Token:</tspan><tspan
+           style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+           y="1026.4529"
+           x="19.916155"
+           sodipodi:role="line"
+           id="tspan3588">Formular:</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+         x="69.916153"
+         y="1013.9529"
+         id="text3580"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           x="69.916153"
+           y="1013.9529"
+           style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+           id="tspan3582">{token}</tspan><tspan
+           sodipodi:role="line"
+           x="69.916153"
+           y="1026.4529"
+           style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+           id="tspan3586">{updateUri}</tspan></text>
+      </g>
   </g>
 </svg>

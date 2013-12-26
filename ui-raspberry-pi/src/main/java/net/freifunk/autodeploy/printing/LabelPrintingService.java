@@ -1,6 +1,9 @@
 package net.freifunk.autodeploy.printing;
 
+import java.net.URI;
+
 import net.freifunk.autodeploy.device.DetailedDevice;
+import net.freifunk.autodeploy.firmware.Firmware;
 import net.freifunk.autodeploy.firmware.FirmwareConfiguration;
 
 /**
@@ -13,5 +16,11 @@ public interface LabelPrintingService {
     /**
      * Print a label containing the given details.
      */
-    void printLabel(DetailedDevice device, FirmwareConfiguration configuration);
+    void printLabel(
+        Firmware firmware,
+        DetailedDevice device,
+        FirmwareConfiguration configuration,
+        String updateToken,
+        URI updateUri
+    );
 }

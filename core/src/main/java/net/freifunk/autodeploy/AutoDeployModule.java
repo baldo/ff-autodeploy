@@ -11,6 +11,9 @@ import net.freifunk.autodeploy.selenium.Actor;
 import net.freifunk.autodeploy.selenium.ActorImpl;
 import net.freifunk.autodeploy.selenium.HeadlessDriver;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -72,5 +75,17 @@ public class AutoDeployModule extends AbstractModule {
     private WebDriverWait provideWebDriverWait(final WebDriver webDriver) {
         final WebDriverWait webDriverWait = new WebDriverWait(webDriver, 10 /* seconds */);
         return webDriverWait;
+    }
+
+    @Provides
+    @Singleton
+    private HttpClient provideHttpClient() {
+        return HttpClientBuilder.create().build();
+    }
+
+    @Provides
+    @Singleton
+    private ObjectMapper provideObjectMapper() {
+        return new ObjectMapper();
     }
 }
