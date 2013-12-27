@@ -3,13 +3,17 @@ package net.freifunk.autodeploy.firmware;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.net.URI;
+import java.util.Set;
 
 import net.freifunk.autodeploy.device.DetailedDevice;
+import net.freifunk.autodeploy.device.Device;
 import net.freifunk.autodeploy.selenium.Actor;
 
 import org.openqa.selenium.By;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Configures the Freifunk Nord firmware.
@@ -37,12 +41,22 @@ public abstract class AbstractFreifunkNordConfigurator implements FirmwareConfig
     private static final By REBOOT_BUTTON = By.cssSelector(".btn.primary");
     private static final String CONFIGURATION_DONE_HEADLINE = "Konfiguration abgeschlossen";
 
+    private static final Set<Device> DEVICES_REQUIRING_REWIRING = ImmutableSet.of(
+        new Device("WR841N", "v8"),
+        new Device("WR841ND", "v8")
+    );
+
     private final Actor _actor;
 
     public AbstractFreifunkNordConfigurator(
         final Actor actor
     ) {
         _actor = actor;
+    }
+
+    @Override
+    public boolean requiresRewiring(final Device device) {
+        return DEVICES_REQUIRING_REWIRING.contains(device);
     }
 
     @Override

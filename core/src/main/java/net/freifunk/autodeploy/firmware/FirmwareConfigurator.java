@@ -3,6 +3,7 @@ package net.freifunk.autodeploy.firmware;
 import java.net.URI;
 
 import net.freifunk.autodeploy.device.DetailedDevice;
+import net.freifunk.autodeploy.device.Device;
 
 /**
  * Configures the Freifunk firmware on a freshly deployed device.
@@ -10,6 +11,11 @@ import net.freifunk.autodeploy.device.DetailedDevice;
  * @author Andreas Baldeau <andreas@baldeau.net>
  */
 public interface FirmwareConfigurator {
+
+    /**
+     * Wheter the device needs to be rewired before configuration.
+     */
+    boolean requiresRewiring(Device device);
 
     /**
      * Configures the Freifunk firmware. The given password will be set for the root user on the device.

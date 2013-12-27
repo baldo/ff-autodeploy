@@ -132,6 +132,12 @@ public class RaspberryPiMain {
                         throw new IllegalStateException("Could not deploy firmware.", e);
                     }
 
+                    if (configurator.requiresRewiring(device)) {
+                        LOG.debug("Rewiring is required for device. Waiting for confirmation.");
+                        _lcdDriver.writeLines("Connect WAN port", "            [OK]");
+                        waitForButton();
+                    }
+
                     LOG.debug("Starting configuration.");
 
                     _lcdDriver.writeLines("Configuring...", "Please wait...");
@@ -251,8 +257,6 @@ public class RaspberryPiMain {
     }
 
     private void waitForButton() {
-        Sleeper.sleepTight(100);
-        _joystickDriver.flush();
         while (_joystickDriver.read() != BUTTON) {
         }
     }
