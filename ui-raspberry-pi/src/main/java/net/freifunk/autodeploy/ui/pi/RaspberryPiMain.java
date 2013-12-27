@@ -215,6 +215,8 @@ public class RaspberryPiMain {
         LOG.debug("Device detected: " + device.asString());
 
         _lcdDriver.writeLines(device.asString(), "          [Next]");
+        waitForButton();
+
         return device;
     }
 
