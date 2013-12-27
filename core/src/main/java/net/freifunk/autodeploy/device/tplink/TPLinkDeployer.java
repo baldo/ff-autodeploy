@@ -50,6 +50,7 @@ public class TPLinkDeployer implements DeviceDeployer {
 
     // menu
     private static final String MENU_FRAME_NAME = "bottomLeftFrame";
+    private static final By STATUS_MENU_ITEM = By.xpath("//a[contains(text(),'Status')]");
     private static final By SYSTEM_TOOLS_MENU_ITEM = By.xpath("//a[contains(text(),'System Tools')]");
     private static final By FIRMWARE_UPGRADE_MENU_ITEM = By.xpath("//a[contains(text(),'Firmware Upgrade')]");
 
@@ -134,6 +135,8 @@ public class TPLinkDeployer implements DeviceDeployer {
     }
 
     private Device getDevice() {
+        _actor.selectFrame(MENU_FRAME_NAME);
+        _actor.clickElement(STATUS_MENU_ITEM);
         _actor.selectFrame(MAIN_FRAME_NAME);
         final String hardwareVersionString = _actor.getTextOfElement(HARDWARE_VERSION);
         final Device device = hardwareVersionToDevice(hardwareVersionString);
@@ -141,6 +144,8 @@ public class TPLinkDeployer implements DeviceDeployer {
     }
 
     private String getMac() {
+        _actor.selectFrame(MENU_FRAME_NAME);
+        _actor.clickElement(STATUS_MENU_ITEM);
         _actor.selectFrame(MAIN_FRAME_NAME);
         final String mac = _actor.getTextOfElement(MAC_ADDRESS);
         return mac.toLowerCase().replace("-", ":");
