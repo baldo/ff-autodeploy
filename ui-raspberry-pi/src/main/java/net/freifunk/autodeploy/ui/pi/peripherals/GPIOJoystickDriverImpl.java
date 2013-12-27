@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.openqa.selenium.browserlaunchers.Sleeper;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.pi4j.io.gpio.GpioController;
@@ -122,6 +124,8 @@ public class GPIOJoystickDriverImpl implements JoystickDriver {
 
     @Override
     public JoystickEvent read() {
+        Sleeper.sleepTight(200);
+        flush();
         return pop();
     }
 
