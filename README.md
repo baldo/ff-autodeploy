@@ -4,6 +4,8 @@ The software can be used to automatically install (Freifunk) firmware
 replacing the manufacturer firmware. It can also be used to configure
 the installed firmware on the device.
 
+For information on the license see LICENSE. For contributers see CONTRIB.
+
 
 ## Dependencies ##
 
